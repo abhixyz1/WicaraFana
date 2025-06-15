@@ -11,6 +11,18 @@ interface ChatMessageProps {
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderGender }) => {
   const { user } = useUser();
   const isOwnMessage = user?.id === message.userId;
+  const isSystemMessage = message.userId === 'system';
+  
+  // Tampilkan pesan sistem dengan format khusus
+  if (isSystemMessage) {
+    return (
+      <div className="flex justify-center my-4">
+        <div className="bg-gray-100 text-gray-600 rounded-full px-4 py-2 text-xs max-w-[80%] text-center">
+          {message.text}
+        </div>
+      </div>
+    );
+  }
   
   // Tentukan warna berdasarkan gender
   const getBubbleColor = () => {

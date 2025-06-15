@@ -11,3 +11,35 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Animasi gelembung mengambang */
+@keyframes float {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-100vh);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-200vh);
+    opacity: 0;
+  }
+}
+
+.animate-float {
+  animation-name: float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+/* Pola grid untuk background */
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(100, 100, 255, 0.1) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(100, 100, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}

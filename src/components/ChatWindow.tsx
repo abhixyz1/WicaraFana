@@ -10,7 +10,7 @@ interface UserMap {
 }
 
 const ChatWindow: React.FC = () => {
-  const { messages, currentRoom, leaveCurrentRoom } = useChat();
+  const { messages, currentRoom, leaveCurrentRoom, sendMessage } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [users, setUsers] = useState<UserMap>({});
   
@@ -47,8 +47,13 @@ const ChatWindow: React.FC = () => {
   const expiresAt = new Date(currentRoom.expiresAt);
   const timeRemaining = formatDistanceToNow(expiresAt);
 
+  // Debug function to test messaging
+  const testSendMessage = () => {
+    sendMessage('Test message from debugging function');
+  };
+
   return (
-    <div className="flex flex-col h-full max-w-4xl w-full mx-auto shadow-xl rounded-xl overflow-hidden">
+    <div className="flex flex-col h-full max-w-4xl w-full mx-auto shadow-xl rounded-xl overflow-hidden relative z-10">
       <div className="bg-white border-b border-gray-200 p-4 flex justify-between items-center bg-gradient-to-r from-primary-600 to-primary-700 text-white">
         <div>
           <h2 className="text-xl font-semibold">Wicara Fana</h2>
@@ -56,12 +61,22 @@ const ChatWindow: React.FC = () => {
             Chat berakhir dalam {timeRemaining}
           </p>
         </div>
-        <button
-          onClick={leaveCurrentRoom}
-          className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-4 py-2 text-sm transition-colors backdrop-blur-sm"
-        >
-          Keluar Chat
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Debug button - remove in production */}
+          <button
+            onClick={testSendMessage}
+            className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-2 py-1 text-xs transition-colors backdrop-blur-sm"
+          >
+            Test
+          </button>
+          
+          <button
+            onClick={leaveCurrentRoom}
+            className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-4 py-2 text-sm transition-colors backdrop-blur-sm"
+          >
+            Keluar Chat
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50">

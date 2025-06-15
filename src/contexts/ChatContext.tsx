@@ -23,6 +23,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Listen for incoming messages
     socket.on('receive_message', (message: Message) => {
+      console.log('Received message:', message);
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
@@ -59,10 +60,26 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentRoom(newRoom);
     setMessages([]);
     joinRoom(roomId, user.id);
+    
+    // Add welcome message
+    const welcomeMessage: Message = {
+      id: uuidv4(),
+      text: "Selamat datang di Wicara Fana! Anda telah terhubung dan dapat mulai mengobrol sekarang.",
+      userId: "system",
+      timestamp: new Date().toISOString(),
+      roomId: roomId,
+    };
+    
+    setMessages([welcomeMessage]);
   };
 
   const sendMessage = (text: string) => {
-    if (!user || !currentRoom) return;
+    if (!user || !currentRoom) {
+      console.error("Can't send message: user or currentRoom is null", { user, currentRoom });
+      return;
+    }
+    
+    console.log("Sending message:", text);
     
     const newMessage: Message = {
       id: uuidv4(),
@@ -72,11 +89,17 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       roomId: currentRoom.id,
     };
     
-    // Add message to local state
+    // Add message to local state immediately
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     
-    // Send message through socket
-    socket.emit('send_message', newMessage);
+    try {
+      // Send message through socket
+      socket.emit('send_message', newMessage);
+    } catch (error) {
+      console.error("Error sending message through socket:", error);
+      
+      // Fallback: If socket fails, at least we've already added to local state
+    }
   };
 
   const leaveCurrentRoom = () => {
