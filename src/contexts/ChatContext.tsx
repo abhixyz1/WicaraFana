@@ -69,6 +69,42 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
+  // Leave current room function
+  const leaveCurrentRoom = useCallback(() => {
+    if (!user || !currentRoom) return;
+    
+    try {
+      // Leave the room
+      leaveRoom(currentRoom.id, user.id);
+      
+      // Reset state
+      setCurrentRoom(null);
+      setMessages([]);
+      
+      // Remove roomId from token
+      try {
+        const storedTokenData = localStorage.getItem(TOKEN_STORAGE_KEY);
+        if (storedTokenData) {
+          const tokenData = JSON.parse(storedTokenData);
+          delete tokenData.roomId;
+          localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
+        }
+      } catch (error) {
+        console.error("Error removing roomId from token:", error);
+      }
+    } catch (error) {
+      console.error("Error leaving room:", error);
+    }
+  }, [user, currentRoom]);
+
+  // Menangani logout - ketika user menjadi null, keluar dari ruang chat
+  useEffect(() => {
+    if (!user && currentRoom) {
+      // User telah logout, keluar dari ruang chat
+      leaveCurrentRoom();
+    }
+  }, [user, currentRoom, leaveCurrentRoom]);
+
   // Check if there's a stored room in token when component mounts
   useEffect(() => {
     if (user && shouldAutoJoin && isConnected) {
@@ -259,30 +295,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error("Error sending message through socket:", error);
       
       // Fallback: If socket fails, at least we've already added to local state
-    }
-  }, [user, currentRoom]);
-
-  // Leave room function
-  const leaveCurrentRoom = useCallback(() => {
-    if (!user || !currentRoom) return;
-    
-    // Disable auto-join to prevent reconnecting
-    setShouldAutoJoin(false);
-    
-    leaveRoom(currentRoom.id, user.id);
-    setCurrentRoom(null);
-    setMessages([]);
-    
-    // Remove roomId from token
-    try {
-      const storedTokenData = localStorage.getItem(TOKEN_STORAGE_KEY);
-      if (storedTokenData) {
-        const tokenData = JSON.parse(storedTokenData);
-        delete tokenData.roomId;
-        localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
-      }
-    } catch (error) {
-      console.error("Error removing roomId from token:", error);
     }
   }, [user, currentRoom]);
 

@@ -31,10 +31,11 @@ const BUBBLES = Array.from({ length: 10 }, (_, i) => ({
 }));
 
 const WelcomeScreen: React.FC = () => {
-  const { user, loginWithToken } = useUser();
+  const { user, loginWithToken, logout } = useUser();
   const { joinRandomRoom } = useChat();
   const [tagline, setTagline] = useState<string>(TAGLINES[0]);
   const [isJoining, setIsJoining] = useState<boolean>(false);
+  const [hasStoredToken, setHasStoredToken] = useState<boolean>(false);
   const navigate = useNavigate();
   
   // Change tagline every 5 seconds
@@ -50,15 +51,34 @@ const WelcomeScreen: React.FC = () => {
   useEffect(() => {
     const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
     if (savedToken) {
+      setHasStoredToken(true);
+    }
+  }, []);
+
+  // Login with stored token
+  const handleLoginWithToken = () => {
+    const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (savedToken) {
       try {
         const tokenData = JSON.parse(savedToken);
         loginWithToken(tokenData.value);
       } catch (error) {
         console.error('Invalid token format:', error);
         localStorage.removeItem(TOKEN_STORAGE_KEY);
+        setHasStoredToken(false);
       }
     }
-  }, [loginWithToken]);
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setHasStoredToken(false);
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
 
   // Join chat room when user is authenticated
   const handleJoinChat = () => {
@@ -107,7 +127,7 @@ const WelcomeScreen: React.FC = () => {
         
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 animate-scale-in">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-            {user ? 'Mulai Ngobrol' : 'Masuk dulu yuk!'}
+            {user ? 'Mulai Ngobrol' : (hasStoredToken ? 'Selamat Datang Kembali!' : 'Masuk dulu yuk!')}
           </h2>
           
           {user ? (
@@ -126,17 +146,49 @@ const WelcomeScreen: React.FC = () => {
                 </ul>
               </div>
               
-              <button
-                onClick={handleJoinChat}
-                disabled={isJoining}
-                className={`w-full py-3 rounded-lg text-white font-medium transition-all ${
-                  isJoining 
-                    ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-primary-600 hover:bg-primary-700 hover:scale-[1.02] active:scale-[0.98]'
-                }`}
-              >
-                {isJoining ? 'Menghubungkan...' : 'Gabung Chat Global!'}
-              </button>
+              <div className="flex flex-col space-y-3">
+                <button
+                  onClick={handleJoinChat}
+                  disabled={isJoining}
+                  className={`w-full py-3 rounded-lg text-white font-medium transition-all ${
+                    isJoining 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-primary-600 hover:bg-primary-700 hover:scale-[1.02] active:scale-[0.98]'
+                  }`}
+                >
+                  {isJoining ? 'Menghubungkan...' : 'Gabung Chat Global!'}
+                </button>
+                
+                <button
+                  onClick={handleLogout}
+                  className="w-full py-2 rounded-lg text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 font-medium transition-all"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          ) : hasStoredToken ? (
+            <div className="space-y-6 animate-fade-in">
+              <div className="bg-primary-50 rounded-lg p-4 border border-primary-100">
+                <p className="text-gray-700 mb-1">Kamu sudah pernah login sebelumnya!</p>
+                <p className="text-sm text-gray-500">Gunakan sesi sebelumnya atau buat sesi baru.</p>
+              </div>
+              
+              <div className="flex flex-col space-y-3">
+                <button
+                  onClick={handleLoginWithToken}
+                  className="w-full py-3 rounded-lg text-white font-medium transition-all bg-primary-600 hover:bg-primary-700 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  Gunakan Sesi Sebelumnya
+                </button>
+                
+                <button
+                  onClick={handleLogout}
+                  className="w-full py-2 rounded-lg text-gray-600 border border-gray-200 bg-gray-50 hover:bg-gray-100 font-medium transition-all"
+                >
+                  Buat Sesi Baru
+                </button>
+              </div>
             </div>
           ) : (
             <Auth />
