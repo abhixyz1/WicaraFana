@@ -10,6 +10,7 @@ export interface User {
   id: string;
   gender: 'male' | 'female';
   avatar: string;
+  characterName: string;
   isOnline: boolean;
 }
 

@@ -6,12 +6,14 @@ import { formatDistanceToNow } from 'date-fns';
 interface ChatMessageProps {
   message: Message;
   senderGender?: 'male' | 'female';
+  senderAvatar?: string;
+  senderName?: string;
 }
 
 // Emoji reactions
 const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥', '👀', '🙌'];
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderGender }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderGender, senderAvatar, senderName }) => {
   const { user } = useUser();
   const isOwnMessage = user?.id === message.userId;
   const isSystemMessage = message.userId === 'system';
@@ -81,12 +83,19 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderGender }) => {
       )}
       
       {!isOwnMessage && (
-        <div 
-          className={`w-8 h-8 rounded-full mr-2 flex-shrink-0 flex items-center justify-center ${
-            senderGender === 'female' ? 'bg-pink-500' : 'bg-blue-500'
-          } text-white text-xs font-bold shadow-md hover:scale-[1.1] hover:rotate-[5deg] transition-transform`}
-        >
-          {senderGender === 'female' ? 'F' : 'M'}
+        <div className="flex flex-col items-center mr-2">
+          <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 shadow-md hover:scale-[1.1] transition-transform">
+            {senderAvatar ? (
+              <img src={senderAvatar} alt={senderName || 'Avatar'} className="w-full h-full object-cover" />
+            ) : (
+              <div className={`w-full h-full flex items-center justify-center ${
+                senderGender === 'female' ? 'bg-pink-500' : 'bg-blue-500'
+              } text-white text-xs font-bold`}>
+                {senderGender === 'female' ? 'F' : 'M'}
+              </div>
+            )}
+          </div>
+          {senderName && <span className="text-xs text-gray-500 mt-1">{senderName.split(' ')[0]}</span>}
         </div>
       )}
       
@@ -128,12 +137,19 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderGender }) => {
       </div>
       
       {isOwnMessage && (
-        <div 
-          className={`w-8 h-8 rounded-full ml-2 flex-shrink-0 flex items-center justify-center ${
-            user?.gender === 'female' ? 'bg-pink-500' : 'bg-blue-500'
-          } text-white text-xs font-bold shadow-md hover:scale-[1.1] hover:rotate-[-5deg] transition-transform`}
-        >
-          {user?.gender === 'female' ? 'F' : 'M'}
+        <div className="flex flex-col items-center ml-2">
+          <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 shadow-md hover:scale-[1.1] transition-transform">
+            {user?.avatar ? (
+              <img src={user.avatar} alt={user.characterName || 'Avatar'} className="w-full h-full object-cover" />
+            ) : (
+              <div className={`w-full h-full flex items-center justify-center ${
+                user?.gender === 'female' ? 'bg-pink-500' : 'bg-blue-500'
+              } text-white text-xs font-bold`}>
+                {user?.gender === 'female' ? 'F' : 'M'}
+              </div>
+            )}
+          </div>
+          {user?.characterName && <span className="text-xs text-gray-500 mt-1">{user.characterName.split(' ')[0]}</span>}
         </div>
       )}
     </div>

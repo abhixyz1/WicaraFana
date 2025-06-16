@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { useChat } from '../contexts/ChatContext';
 import Auth from './Auth';
+import CharacterSelection from './CharacterSelection';
 import { useNavigate } from 'react-router-dom';
 
 // Token storage key
@@ -21,17 +22,17 @@ const TAGLINES = [
   "Bebas ngomong, tanpa khawatir!"
 ];
 
-// Bubble animations
-const BUBBLES = Array.from({ length: 10 }, (_, i) => ({
+// Reduced number of bubbles for better performance
+const BUBBLES = Array.from({ length: 5 }, (_, i) => ({
   id: i,
-  size: Math.random() * 60 + 20,
+  size: Math.random() * 40 + 20, // Smaller bubbles
   left: Math.random() * 100,
   animationDuration: Math.random() * 15 + 10,
   delay: Math.random() * 5,
 }));
 
 const WelcomeScreen: React.FC = () => {
-  const { user, loginWithToken, logout } = useUser();
+  const { user, loginWithToken, logout, needsCharacterSelection, setUserCharacter } = useUser();
   const { joinRandomRoom } = useChat();
   const [tagline, setTagline] = useState<string>(TAGLINES[0]);
   const [isJoining, setIsJoining] = useState<boolean>(false);
@@ -80,6 +81,11 @@ const WelcomeScreen: React.FC = () => {
     }
   };
 
+  // Handle character selection
+  const handleSelectCharacter = (characterId: number) => {
+    setUserCharacter(characterId);
+  };
+
   // Join chat room when user is authenticated
   const handleJoinChat = () => {
     if (!user) return;
@@ -102,12 +108,12 @@ const WelcomeScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 p-4 overflow-hidden relative">
-      {/* Decorative bubbles */}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-100 p-4 overflow-hidden relative">
+      {/* Simplified decorative bubbles */}
       {BUBBLES.map(bubble => (
         <div
           key={bubble.id}
-          className="absolute rounded-full bg-primary-500 bg-opacity-10 animate-float"
+          className="absolute rounded-full bg-primary-500 bg-opacity-5 animate-float"
           style={{
             width: `${bubble.size}px`,
             height: `${bubble.size}px`,
@@ -119,72 +125,89 @@ const WelcomeScreen: React.FC = () => {
         />
       ))}
       
-      <div className="w-full max-w-md z-10">
-        <div className="text-center mb-8 animate-fade-in">
+      {/* Main content container */}
+      <div className="w-full max-w-lg z-10 px-4">
+        <div className="text-center mb-6">
           <h1 className="text-4xl font-bold text-primary-800 mb-2">Wicara Fana</h1>
-          <p className="text-primary-600 text-lg animate-pulse">{tagline}</p>
+          <p className="text-primary-600 text-lg">{tagline}</p>
         </div>
         
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 animate-scale-in">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-            {user ? 'Mulai Ngobrol' : (hasStoredToken ? 'Selamat Datang Kembali!' : 'Masuk dulu yuk!')}
-          </h2>
-          
+        {/* Main card with clean design */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden">
           {user ? (
-            <div className="space-y-6 animate-fade-in">
-              <div className="bg-primary-50 rounded-lg p-4 border border-primary-100">
-                <p className="text-gray-700 mb-1">Hai, <span className="font-medium">{user.gender === 'male' ? 'Bro' : 'Sis'}</span>! 👋</p>
-                <p className="text-sm text-gray-500">Kamu siap untuk ngobrol di ruang chat global?</p>
-              </div>
-              
-              <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 text-sm">
-                <p className="font-medium text-blue-700 mb-1">Info Chat Global:</p>
-                <ul className="list-disc list-inside text-blue-600 space-y-1">
-                  <li>Semua user bisa saling chat dalam 1 ruangan</li>
-                  <li>Pesan akan hilang setelah 3 jam</li>
-                  <li>Chat bersifat anonim, hanya gender yang ditampilkan</li>
-                </ul>
-              </div>
-              
-              <div className="flex flex-col space-y-3">
-                <button
-                  onClick={handleJoinChat}
-                  disabled={isJoining}
-                  className={`w-full py-3 rounded-lg text-white font-medium transition-all ${
-                    isJoining 
-                      ? 'bg-gray-400 cursor-not-allowed' 
-                      : 'bg-primary-600 hover:bg-primary-700 hover:scale-[1.02] active:scale-[0.98]'
-                  }`}
-                >
-                  {isJoining ? 'Menghubungkan...' : 'Gabung Chat Global!'}
-                </button>
+            needsCharacterSelection ? (
+              <CharacterSelection onSelectCharacter={handleSelectCharacter} />
+            ) : (
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">Mulai Ngobrol</h2>
                 
-                <button
-                  onClick={handleLogout}
-                  className="w-full py-2 rounded-lg text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 font-medium transition-all"
-                >
-                  Logout
-                </button>
+                <div className="flex items-center mb-4 p-3 bg-primary-50 rounded-lg">
+                  <div className="w-12 h-12 rounded-full overflow-hidden mr-3 border border-primary-200">
+                    <img 
+                      src={user.avatar} 
+                      alt={user.characterName} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-gray-700">Hai, <span className="font-medium">{user.characterName}</span>! 👋</p>
+                    <p className="text-sm text-gray-500">Siap untuk ngobrol di ruang chat global?</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start mb-6 p-3 bg-blue-50 rounded-lg">
+                  <div className="text-blue-500 mr-3 mt-1">ℹ️</div>
+                  <div className="text-sm text-blue-700">
+                    <ul className="space-y-1">
+                      <li>• Semua user bisa saling chat dalam 1 ruangan</li>
+                      <li>• Pesan akan hilang setelah 3 jam</li>
+                      <li>• Chat bersifat anonim, hanya karakter yang ditampilkan</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col space-y-3">
+                  <button
+                    onClick={handleJoinChat}
+                    disabled={isJoining}
+                    className={`w-full py-3 rounded-lg text-white font-medium transition-all ${
+                      isJoining 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-primary-600 hover:bg-primary-700 hover:scale-[1.01] active:scale-[0.99]'
+                    }`}
+                  >
+                    {isJoining ? 'Menghubungkan...' : 'Gabung Chat Global!'}
+                  </button>
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="w-full py-2 rounded-lg text-red-600 border border-red-200 hover:bg-red-50 font-medium transition-all"
+                  >
+                    Logout
+                  </button>
+                </div>
               </div>
-            </div>
+            )
           ) : hasStoredToken ? (
-            <div className="space-y-6 animate-fade-in">
-              <div className="bg-primary-50 rounded-lg p-4 border border-primary-100">
-                <p className="text-gray-700 mb-1">Kamu sudah pernah login sebelumnya!</p>
-                <p className="text-sm text-gray-500">Gunakan sesi sebelumnya atau buat sesi baru.</p>
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">Selamat Datang Kembali!</h2>
+              
+              <div className="flex items-center mb-6 p-3 bg-primary-50 rounded-lg">
+                <div className="text-primary-500 mr-3 text-xl">🔑</div>
+                <p className="text-gray-700">Kami mendeteksi sesi sebelumnya. Pilih opsi di bawah:</p>
               </div>
               
               <div className="flex flex-col space-y-3">
                 <button
                   onClick={handleLoginWithToken}
-                  className="w-full py-3 rounded-lg text-white font-medium transition-all bg-primary-600 hover:bg-primary-700 hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full py-3 rounded-lg text-white font-medium transition-all bg-primary-600 hover:bg-primary-700"
                 >
                   Gunakan Sesi Sebelumnya
                 </button>
                 
                 <button
                   onClick={handleLogout}
-                  className="w-full py-2 rounded-lg text-gray-600 border border-gray-200 bg-gray-50 hover:bg-gray-100 font-medium transition-all"
+                  className="w-full py-2 rounded-lg text-gray-600 hover:bg-gray-100 font-medium transition-all border border-gray-200"
                 >
                   Buat Sesi Baru
                 </button>
@@ -195,7 +218,7 @@ const WelcomeScreen: React.FC = () => {
           )}
         </div>
         
-        <div className="text-center text-xs text-primary-700 opacity-80 animate-fade-in">
+        <div className="text-center text-xs text-primary-700 opacity-80 mt-4">
           <p>Semua chat akan hilang setelah 3 jam.</p>
           <p className="mt-1">
             Created by <a href="https://github.com/abhixyz1" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary-800">@abhixyz1</a>

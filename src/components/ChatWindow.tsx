@@ -91,6 +91,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onExitChat }) => {
           id: message.userId,
           gender: Math.random() > 0.5 ? 'male' : 'female',
           avatar: '',
+          characterName: Math.random() > 0.5 ? 'User Anonim' : 'Pengguna Baru',
           isOnline: true
         };
       }
@@ -114,27 +115,27 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onExitChat }) => {
   // Tampilkan loading state jika belum terhubung ke server
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center h-full w-full animate-fade-in">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center">
-          <h2 className="text-2xl font-bold text-primary-700 mb-4">Menghubungkan ke Server...</h2>
-          <p className="text-gray-600 mb-6">Mohon tunggu sebentar, kami sedang mencoba menghubungkan ke server chat.</p>
-          <div className="flex justify-center">
+      <div className="flex flex-col items-center justify-center h-full w-full">
+        <div className="bg-white rounded-lg shadow-md p-6 max-w-md text-center">
+          <h2 className="text-xl font-semibold text-primary-700 mb-3">Menghubungkan ke Server...</h2>
+          <p className="text-gray-600 mb-4">Mohon tunggu sebentar, kami sedang mencoba menghubungkan ke server chat.</p>
+          <div className="flex justify-center mb-4">
             <div className="animate-pulse flex space-x-2">
-              <div className="w-3 h-3 bg-primary-400 rounded-full"></div>
-              <div className="w-3 h-3 bg-primary-500 rounded-full animation-delay-200"></div>
-              <div className="w-3 h-3 bg-primary-600 rounded-full animation-delay-400"></div>
+              <div className="w-2 h-2 bg-primary-400 rounded-full"></div>
+              <div className="w-2 h-2 bg-primary-500 rounded-full animation-delay-200"></div>
+              <div className="w-2 h-2 bg-primary-600 rounded-full animation-delay-400"></div>
             </div>
           </div>
           {connectionError && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm">
               <p className="font-medium">Gagal terhubung ke server:</p>
               <p>{connectionError}</p>
-              <p className="mt-2 text-xs">Mencoba menghubungkan kembali...</p>
+              <p className="mt-1 text-xs">Mencoba menghubungkan kembali...</p>
             </div>
           )}
           <button 
             onClick={() => navigate('/')}
-            className="mt-6 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 transition-colors"
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-gray-700 transition-colors"
           >
             Kembali ke Home
           </button>
@@ -146,20 +147,20 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onExitChat }) => {
   // Tampilkan loading state jika belum ada room
   if (!currentRoom) {
     return (
-      <div className="flex flex-col items-center justify-center h-full w-full animate-fade-in">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center">
-          <h2 className="text-2xl font-bold text-primary-700 mb-4">Menghubungkan ke Chat...</h2>
-          <p className="text-gray-600 mb-6">Mohon tunggu sebentar, kami sedang menghubungkan ke ruang chat global.</p>
-          <div className="flex justify-center">
+      <div className="flex flex-col items-center justify-center h-full w-full">
+        <div className="bg-white rounded-lg shadow-md p-6 max-w-md text-center">
+          <h2 className="text-xl font-semibold text-primary-700 mb-3">Menghubungkan ke Chat...</h2>
+          <p className="text-gray-600 mb-4">Mohon tunggu sebentar, kami sedang menghubungkan ke ruang chat global.</p>
+          <div className="flex justify-center mb-4">
             <div className="animate-pulse flex space-x-2">
-              <div className="w-3 h-3 bg-primary-400 rounded-full"></div>
-              <div className="w-3 h-3 bg-primary-500 rounded-full animation-delay-200"></div>
-              <div className="w-3 h-3 bg-primary-600 rounded-full animation-delay-400"></div>
+              <div className="w-2 h-2 bg-primary-400 rounded-full"></div>
+              <div className="w-2 h-2 bg-primary-500 rounded-full animation-delay-200"></div>
+              <div className="w-2 h-2 bg-primary-600 rounded-full animation-delay-400"></div>
             </div>
           </div>
           <button 
             onClick={() => navigate('/')}
-            className="mt-6 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 transition-colors"
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-gray-700 transition-colors"
           >
             Kembali ke Home
           </button>
@@ -180,23 +181,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onExitChat }) => {
 
   return (
     <div 
-      className="flex flex-col h-full max-w-4xl w-full mx-auto shadow-2xl rounded-xl overflow-hidden relative z-10 animate-fade-in"
-      style={{animationDelay: '0.2s', animationFillMode: 'forwards'}}
+      className="flex flex-col h-full max-w-4xl w-full mx-auto shadow-md rounded-lg overflow-hidden relative z-10"
     >
       <div 
-        className="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-4 flex justify-between items-center border-b border-primary-800 animate-slide-up"
-        style={{animationDelay: '0.4s', animationFillMode: 'forwards'}}
+        className="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-3 flex justify-between items-center border-b border-primary-800"
       >
         <div>
           <div 
-            className="flex items-center gap-2 hover:scale-105 transition-transform"
+            className="flex items-center gap-2"
           >
-            <h2 className="text-2xl font-bold">Wicara Fana</h2>
-            <span className="text-2xl">{randomEmoji}</span>
+            <h2 className="text-xl font-bold">Wicara Fana</h2>
+            <span className="text-xl">{randomEmoji}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mt-1">
             <p 
-              className="text-sm opacity-90 animate-pulse"
+              className="text-sm opacity-90"
             >
               Pesan hilang dalam {timeRemaining}
             </p>
@@ -218,11 +217,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onExitChat }) => {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {/* Debug button - remove in production */}
           <button
             onClick={testSendMessage}
-            className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-2 py-1 text-xs transition-colors backdrop-blur-sm hover:scale-110 active:scale-90 transition-transform"
+            className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded px-2 py-1 text-xs transition-colors"
           >
             Test
           </button>
@@ -231,11 +230,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onExitChat }) => {
             onClick={onExitChat}
             onMouseEnter={() => setIsExitHovered(true)}
             onMouseLeave={() => setIsExitHovered(false)}
-            className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-4 py-2 text-sm transition-all backdrop-blur-sm hover:scale-105 active:scale-95"
+            className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded px-4 py-2 text-sm transition-colors"
           >
             <span>Cabut Dulu</span>
             <span
-              className={`inline-block transition-transform ${isExitHovered ? 'rotate-90' : ''}`}
+              className={`inline-block ml-1 ${isExitHovered ? 'rotate-90' : ''} transition-transform`}
             >
               🚪
             </span>
@@ -243,9 +242,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onExitChat }) => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+      <div className="flex-1 overflow-y-auto p-3 bg-gray-50">
         {!isConnected && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-red-600 text-sm">
+          <div className="bg-red-50 border border-red-100 rounded-lg p-3 mb-4 text-red-600 text-sm">
             <p className="font-medium">Koneksi terputus</p>
             <p>Mencoba menghubungkan kembali ke server...</p>
           </div>
@@ -253,14 +252,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onExitChat }) => {
         
         {messages.length === 0 ? (
           <div 
-            className="flex flex-col items-center justify-center h-full text-gray-400 animate-fade-in opacity-0"
-            style={{animationDelay: '0.6s', animationFillMode: 'forwards'}}
+            className="flex flex-col items-center justify-center h-full text-gray-400"
           >
             <div 
-              className="bg-white p-6 rounded-xl shadow-md text-center max-w-md hover:scale-105 hover:rotate-[1deg] transition-transform"
+              className="bg-white p-4 rounded-lg shadow-sm text-center max-w-md border border-gray-100"
             >
               <p 
-                className="text-xl font-medium mb-2 text-primary-600 animate-pulse"
+                className="text-lg font-medium mb-2 text-primary-600"
               >
                 {chatPhrase}
               </p>
@@ -271,15 +269,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onExitChat }) => {
           messages.map((message, index) => (
             <div
               key={message.id}
-              className="animate-fade-in opacity-0"
-              style={{
-                animationDelay: `${Math.min(index * 0.1, 1)}s`,
-                animationFillMode: 'forwards'
-              }}
             >
               <ChatMessage 
                 message={message} 
                 senderGender={users[message.userId]?.gender}
+                senderAvatar={users[message.userId]?.avatar}
+                senderName={users[message.userId]?.characterName}
               />
             </div>
           ))
@@ -290,8 +285,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onExitChat }) => {
       <ChatInput />
       
       <div 
-        className="bg-gray-50 p-2 text-center border-t border-gray-200 animate-slide-up opacity-0"
-        style={{animationDelay: '0.8s', animationFillMode: 'forwards', animationDirection: 'reverse'}}
+        className="bg-gray-50 p-2 text-center border-t border-gray-200"
       >
         <p className="text-xs text-gray-400">
           Created by <a href="https://github.com/abhixyz1" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">@abhixyz1</a>

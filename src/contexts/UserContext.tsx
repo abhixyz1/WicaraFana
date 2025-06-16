@@ -1,25 +1,28 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { User } from '../types';
-import { generateRandomAvatar, generateUserId } from '../utils/userUtils';
+import { generateUserId, AVAILABLE_CHARACTERS } from '../utils/userUtils';
 
 interface UserContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  setUserGender: (gender: 'male' | 'female') => void;
+  setUserCharacter: (characterId: number) => void;
   loginWithToken: (token: string) => Promise<void>;
   generateToken: () => Promise<string>;
   logout: () => Promise<void>;
   loading: boolean;
   error: string | null;
   clearError: () => void;
+  needsCharacterSelection: boolean;
 }
 
 interface TokenData {
   value: string;
   expires: string;
   userId: string;
-  gender?: 'male' | 'female';
+  characterId?: number;
   avatar?: string;
+  characterName?: string;
+  gender?: 'male' | 'female';
   roomId?: string;
 }
 
@@ -36,24 +39,31 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsCharacterSelection, setNeedsCharacterSelection] = useState<boolean>(false);
 
   // Clear error message
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  // Update token data with gender information
-  const updateTokenWithGender = useCallback((gender: 'male' | 'female', avatar: string) => {
+  // Update token data with character information
+  const updateTokenWithCharacter = useCallback((characterId: number) => {
     try {
       const storedTokenData = localStorage.getItem(TOKEN_STORAGE_KEY);
       if (storedTokenData) {
         const tokenData: TokenData = JSON.parse(storedTokenData);
-        tokenData.gender = gender;
-        tokenData.avatar = avatar;
-        localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
+        const character = AVAILABLE_CHARACTERS.find(c => c.id === characterId);
+        
+        if (character) {
+          tokenData.characterId = characterId;
+          tokenData.avatar = character.avatar;
+          tokenData.characterName = character.name;
+          tokenData.gender = character.gender;
+          localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
+        }
       }
     } catch (error) {
-      console.error("Failed to update token with gender", error);
+      console.error("Failed to update token with character", error);
     }
   }, []);
 
@@ -71,29 +81,33 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Memoize functions to prevent unnecessary re-renders
-  const setUserGender = useCallback((gender: 'male' | 'female'): void => {
+  // Set user character
+  const setUserCharacter = useCallback((characterId: number) => {
     if (user) {
-      const avatar = generateRandomAvatar(gender);
-      const newUser = {
-        ...user,
-        gender,
-        avatar,
-      };
-      setUser(newUser);
+      const character = AVAILABLE_CHARACTERS.find(c => c.id === characterId);
       
-      // Update token with gender information
-      updateTokenWithGender(gender, avatar);
-      
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+      if (character) {
+        const newUser: User = {
+          ...user,
+          gender: character.gender,
+          avatar: character.avatar,
+          characterName: character.name
+        };
+        
+        setUser(newUser);
+        updateTokenWithCharacter(characterId);
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+        setNeedsCharacterSelection(false);
+      }
     }
-  }, [user, updateTokenWithGender]);
+  }, [user, updateTokenWithCharacter]);
 
   const logout = useCallback(async (): Promise<void> => {
     try {
       localStorage.removeItem(USER_STORAGE_KEY);
       localStorage.removeItem(TOKEN_STORAGE_KEY);
       setUser(null);
+      setNeedsCharacterSelection(false);
     } catch (error: any) {
       setError(error.message);
     }
@@ -196,19 +210,34 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
       
-      // Create user from token
-      const userId = tokenData.userId;
-      
-      // Create a user object based on token data
-      const newUser: User = {
-        id: userId,
-        gender: tokenData.gender || 'male', // Default to male if no gender is stored
-        avatar: tokenData.avatar || '',
-        isOnline: true
-      };
-      
-      setUser(newUser);
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+      // Check if character is already selected
+      if (!tokenData.characterId) {
+        // Create basic user without character
+        const newUser: User = {
+          id: tokenData.userId,
+          gender: 'male',
+          avatar: '',
+          characterName: '',
+          isOnline: true
+        };
+        
+        setUser(newUser);
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+        setNeedsCharacterSelection(true);
+      } else {
+        // Create user with existing character
+        const newUser: User = {
+          id: tokenData.userId,
+          gender: tokenData.gender || 'male',
+          avatar: tokenData.avatar || '',
+          characterName: tokenData.characterName || '',
+          isOnline: true
+        };
+        
+        setUser(newUser);
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+        setNeedsCharacterSelection(false);
+      }
       
     } catch (error: any) {
       setError('Token tidak valid. Pastikan Anda memasukkan token dengan benar.');
@@ -236,45 +265,58 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return;
           }
           
-          // If token is valid, create user from token data
-          const userId = tokenData.userId;
-          
-          const newUser: User = {
-            id: userId,
-            gender: tokenData.gender || 'male', // Default to male if no gender is stored
-            avatar: tokenData.avatar || '',
-            isOnline: true
-          };
-          
-          setUser(newUser);
-          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+          // If token is valid, check if character is selected
+          if (!tokenData.characterId) {
+            // Create basic user without character
+            const newUser: User = {
+              id: tokenData.userId,
+              gender: 'male',
+              avatar: '',
+              characterName: '',
+              isOnline: true
+            };
+            
+            setUser(newUser);
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+            setNeedsCharacterSelection(true);
+          } else {
+            // Create user with existing character
+            const newUser: User = {
+              id: tokenData.userId,
+              gender: tokenData.gender || 'male',
+              avatar: tokenData.avatar || '',
+              characterName: tokenData.characterName || '',
+              isOnline: true
+            };
+            
+            setUser(newUser);
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+            setNeedsCharacterSelection(false);
+          }
         }
       } catch (error) {
-        // If there's an error parsing, remove the token
-        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        console.error("Error checking token:", error);
       } finally {
         setLoading(false);
       }
     };
-
+    
     checkToken();
   }, []);
 
-  // Memoize context value to prevent unnecessary re-renders
-  const contextValue = React.useMemo(() => ({ 
-    user, 
-    setUser, 
-    setUserGender, 
-    loginWithToken,
-    generateToken,
-    logout,
-    loading,
-    error,
-    clearError
-  }), [user, setUserGender, loginWithToken, generateToken, logout, loading, error, clearError]);
-
   return (
-    <UserContext.Provider value={contextValue}>
+    <UserContext.Provider value={{ 
+      user, 
+      setUser, 
+      setUserCharacter,
+      loginWithToken, 
+      generateToken, 
+      logout, 
+      loading, 
+      error, 
+      clearError,
+      needsCharacterSelection
+    }}>
       {children}
     </UserContext.Provider>
   );

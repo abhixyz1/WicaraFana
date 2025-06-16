@@ -53,72 +53,67 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="bg-white bg-opacity-95 backdrop-blur-md rounded-3xl shadow-2xl p-8 max-w-md w-full border border-primary-100">
-      <div className="text-center mb-8">
-        <div className="inline-block relative">
-          <h1 className="text-5xl font-bold text-primary-800 mb-3 relative z-10">Wicara Fana</h1>
-          <div className="absolute -bottom-3 left-0 right-0 h-3 bg-primary-300 opacity-50 rounded-full"></div>
-        </div>
-        <p className="text-gray-600 mt-4">
-          {showGeneratedToken 
-            ? 'Token berhasil dibuat!'
-            : (hasStoredToken ? 'Masuk dengan token yang tersimpan' : 'Dapatkan token untuk memulai chat')}
-        </p>
-      </div>
+    <div className="p-6">
+      <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">
+        {showGeneratedToken ? 'Token Berhasil Dibuat!' : 'Masuk atau Buat Akun'}
+      </h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+        <div className="mb-4 p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm">
           {error}
         </div>
       )}
 
       {showGeneratedToken ? (
         // Tampilan setelah generate token
-        <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <h4 className="font-medium text-green-800 mb-2">Token Berhasil Dibuat!</h4>
-          <p className="text-sm text-gray-600 mb-2">Token Anda:</p>
-          <div className="p-3 bg-white rounded-lg flex items-center justify-between border border-green-200">
-            <code className="text-sm font-mono text-primary-800 break-all">{generatedToken}</code>
+        <div>
+          <div className="mb-4 p-3 bg-green-50 border border-green-100 rounded-lg">
+            <p className="text-sm text-gray-600 mb-2">Token Anda:</p>
+            <div className="p-2 bg-white rounded-lg flex items-center justify-between border border-green-100">
+              <code className="text-sm font-mono text-primary-800 break-all">{generatedToken}</code>
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(generatedToken)}
+                className="ml-2 p-1 text-gray-500 hover:text-gray-700"
+                title="Salin ke clipboard"
+              >
+                📋
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Simpan token ini di tempat yang aman. Token akan kedaluwarsa dalam 7 hari.
+            </p>
+          </div>
+          
+          <div className="flex flex-col space-y-3">
             <button
-              type="button"
-              onClick={() => navigator.clipboard.writeText(generatedToken)}
-              className="ml-2 p-2 text-gray-500 hover:text-gray-700"
-              title="Salin ke clipboard"
+              onClick={handleUseGeneratedToken}
+              disabled={loading}
+              className="w-full py-3 rounded-lg text-white font-medium transition-all bg-green-600 hover:bg-green-700"
             >
-              📋
+              Gunakan Token Ini Sekarang
+            </button>
+            
+            <button
+              onClick={() => setShowGeneratedToken(false)}
+              className="w-full py-2 rounded-lg text-gray-600 hover:bg-gray-100 font-medium transition-all border border-gray-200"
+            >
+              Kembali
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-2">
-            Simpan token ini di tempat yang aman. Token akan kedaluwarsa dalam 7 hari.
-          </p>
-          
-          <button
-            onClick={handleUseGeneratedToken}
-            disabled={loading}
-            className="w-full mt-4 py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all"
-          >
-            Gunakan Token Ini Sekarang
-          </button>
-          
-          <button
-            onClick={() => setShowGeneratedToken(false)}
-            className="w-full mt-2 py-2 px-4 bg-transparent text-gray-600 hover:bg-gray-100 border border-gray-300 rounded-lg transition-all"
-          >
-            Kembali
-          </button>
         </div>
       ) : (
-        <>
+        <div>
           {/* Input Token Manual */}
-          <form onSubmit={handleSubmit} className="mb-6">
-            <div className="mb-4">
-              <label htmlFor="token-input" className="block text-gray-700 mb-2">Masukkan Token</label>
+          <form onSubmit={handleSubmit} className="mb-4">
+            <div className="mb-3">
+              <label htmlFor="token-input" className="block text-gray-700 text-sm mb-1">Token Akses</label>
               <input
                 type="text"
                 id="token-input"
                 value={token}
                 onChange={handleTokenChange}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Masukkan token akses Anda"
               />
             </div>
@@ -126,19 +121,19 @@ const Auth: React.FC = () => {
             <button
               type="submit"
               disabled={loading || !token}
-              className={`w-full py-4 px-6 rounded-xl transition-all text-white font-medium text-lg ${
+              className={`w-full py-2 rounded-lg transition-all text-white font-medium ${
                 loading || !token
                   ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-primary-600 hover:bg-primary-700 active:bg-primary-800 shadow-lg hover:shadow-xl shadow-primary-200/50 transform hover:-translate-y-1'
+                  : 'bg-primary-600 hover:bg-primary-700'
               }`}
             >
               {loading ? 'Memproses...' : 'Masuk dengan Token'}
             </button>
           </form>
 
-          <div className="relative my-8">
+          <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+              <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-white text-gray-500">atau</span>
@@ -146,35 +141,33 @@ const Auth: React.FC = () => {
           </div>
 
           {/* Generate Token */}
-          <div className="p-4 border border-gray-200 rounded-lg mb-6">
-            <h3 className="text-lg font-medium text-gray-800 mb-3">Dapatkan Token Baru</h3>
+          <div className="mb-4">
             <p className="text-sm text-gray-600 mb-3">
-              Token berlaku selama 7 hari dan dapat digunakan untuk masuk tanpa perlu login ulang.
+              Buat token baru untuk memulai. Token berlaku selama 7 hari dan dapat digunakan untuk masuk kembali.
             </p>
             <button
               onClick={handleGenerateToken}
               disabled={loading}
-              className={`w-full py-4 px-6 rounded-xl transition-all text-white font-medium text-lg ${
+              className={`w-full py-3 rounded-lg transition-all text-white font-medium ${
                 loading
                   ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-primary-600 hover:bg-primary-700 active:bg-primary-800 shadow-lg hover:shadow-xl shadow-primary-200/50 transform hover:-translate-y-1'
+                  : 'bg-primary-600 hover:bg-primary-700'
               }`}
             >
-              {loading ? 'Memproses...' : 'Generate Token Baru'}
+              {loading ? 'Memproses...' : 'Buat Token Baru'}
             </button>
           </div>
           
           {/* Informasi Token */}
           {hasStoredToken && (
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-medium text-blue-800 mb-2">Token Tersimpan</h4>
-              <p className="text-sm text-gray-600 mb-2">Token Anda saat ini:</p>
-              <div className="p-3 bg-white rounded-lg flex items-center justify-between border border-blue-200">
-                <code className="text-sm font-mono text-primary-800 break-all">{token}</code>
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+              <p className="text-sm text-gray-600 mb-1">Token tersimpan di perangkat ini:</p>
+              <div className="p-2 bg-white rounded-lg flex items-center justify-between border border-blue-100">
+                <code className="text-xs font-mono text-primary-800 break-all">{token.substring(0, 12)}...{token.substring(token.length - 8)}</code>
                 <button
                   type="button"
                   onClick={() => navigator.clipboard.writeText(token)}
-                  className="ml-2 p-2 text-gray-500 hover:text-gray-700"
+                  className="ml-2 p-1 text-gray-500 hover:text-gray-700"
                   title="Salin ke clipboard"
                 >
                   📋
@@ -182,14 +175,14 @@ const Auth: React.FC = () => {
               </div>
             </div>
           )}
-        </>
+          
+          <div className="mt-4 text-center text-xs text-gray-500">
+            <p>
+              Token digunakan untuk menyimpan sesi Anda. Tidak perlu email atau password.
+            </p>
+          </div>
+        </div>
       )}
-
-      <div className="mt-8 text-center text-xs text-gray-500">
-        <p>
-          Token digunakan untuk menyimpan sesi Anda. Tidak perlu email atau password.
-        </p>
-      </div>
     </div>
   );
 };
