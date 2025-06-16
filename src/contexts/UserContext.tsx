@@ -14,6 +14,15 @@ interface UserContextType {
   clearError: () => void;
 }
 
+interface TokenData {
+  value: string;
+  expires: string;
+  userId: string;
+  gender?: 'male' | 'female';
+  avatar?: string;
+  roomId?: string;
+}
+
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Token storage key
@@ -33,18 +42,52 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
   }, []);
 
+  // Update token data with gender information
+  const updateTokenWithGender = useCallback((gender: 'male' | 'female', avatar: string) => {
+    try {
+      const storedTokenData = localStorage.getItem(TOKEN_STORAGE_KEY);
+      if (storedTokenData) {
+        const tokenData: TokenData = JSON.parse(storedTokenData);
+        tokenData.gender = gender;
+        tokenData.avatar = avatar;
+        localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
+      }
+    } catch (error) {
+      console.error("Failed to update token with gender", error);
+    }
+  }, []);
+
+  // Update token data with room information
+  const updateTokenWithRoom = useCallback((roomId: string) => {
+    try {
+      const storedTokenData = localStorage.getItem(TOKEN_STORAGE_KEY);
+      if (storedTokenData) {
+        const tokenData: TokenData = JSON.parse(storedTokenData);
+        tokenData.roomId = roomId;
+        localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
+      }
+    } catch (error) {
+      console.error("Failed to update token with room", error);
+    }
+  }, []);
+
   // Memoize functions to prevent unnecessary re-renders
   const setUserGender = useCallback((gender: 'male' | 'female'): void => {
     if (user) {
+      const avatar = generateRandomAvatar(gender);
       const newUser = {
         ...user,
         gender,
-        avatar: generateRandomAvatar(gender),
+        avatar,
       };
       setUser(newUser);
+      
+      // Update token with gender information
+      updateTokenWithGender(gender, avatar);
+      
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
     }
-  }, [user]);
+  }, [user, updateTokenWithGender]);
 
   const logout = useCallback(async (): Promise<void> => {
     try {
@@ -81,7 +124,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const userId = generateUserId();
       
-      const tokenData = {
+      const tokenData: TokenData = {
         value: tokenValue,
         expires: expiryDate.toISOString(),
         userId
@@ -89,16 +132,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Store token in localStorage
       localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
-      
-      // Create user from token
-      const newUser = {
-        id: userId,
-        gender: 'male' as 'male' | 'female', // Default to male, will be updated when user selects gender
-        avatar: '',
-        isOnline: true
-      };
-      
-      setUser(newUser);
       
       return tokenValue;
     } catch (error: any) {
@@ -122,7 +155,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Check if this is a stored token
       const storedTokenData = localStorage.getItem(TOKEN_STORAGE_KEY);
-      let tokenData;
+      let tokenData: TokenData;
       
       if (storedTokenData) {
         tokenData = JSON.parse(storedTokenData);
@@ -166,20 +199,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Create user from token
       const userId = tokenData.userId;
       
-      // Check if user profile exists in localStorage
-      const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      } else {
-        // Create a basic user until gender is selected
-        const newUser = {
-          id: userId,
-          gender: 'male' as 'male' | 'female',
-          avatar: '',
-          isOnline: true
-        };
-        setUser(newUser);
-      }
+      // Create a user object based on token data
+      const newUser: User = {
+        id: userId,
+        gender: tokenData.gender || 'male', // Default to male if no gender is stored
+        avatar: tokenData.avatar || '',
+        isOnline: true
+      };
+      
+      setUser(newUser);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
       
     } catch (error: any) {
       setError('Token tidak valid. Pastikan Anda memasukkan token dengan benar.');
@@ -197,7 +226,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const storedTokenData = localStorage.getItem(TOKEN_STORAGE_KEY);
         
         if (storedTokenData) {
-          const tokenData = JSON.parse(storedTokenData);
+          const tokenData: TokenData = JSON.parse(storedTokenData);
           const expiryDate = new Date(tokenData.expires);
           
           // If token is expired, remove it
@@ -207,23 +236,18 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return;
           }
           
-          // If token is valid, check for user data
+          // If token is valid, create user from token data
           const userId = tokenData.userId;
           
-          // Check if user profile exists in localStorage
-          const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-          if (storedUser) {
-            setUser(JSON.parse(storedUser));
-          } else {
-            // Create a basic user until gender is selected
-            const newUser = {
-              id: userId,
-              gender: 'male' as 'male' | 'female',
-              avatar: '',
-              isOnline: true
-            };
-            setUser(newUser);
-          }
+          const newUser: User = {
+            id: userId,
+            gender: tokenData.gender || 'male', // Default to male if no gender is stored
+            avatar: tokenData.avatar || '',
+            isOnline: true
+          };
+          
+          setUser(newUser);
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
         }
       } catch (error) {
         // If there's an error parsing, remove the token

@@ -1,167 +1,153 @@
-import React, { useState, useEffect } from 'react';
-import { useChat } from '../contexts/ChatContext';
+import React, { useEffect, useState } from 'react';
 import { useUser } from '../contexts/UserContext';
+import { useChat } from '../contexts/ChatContext';
 import Auth from './Auth';
+import { useNavigate } from 'react-router-dom';
+
+// Token storage key
+const TOKEN_STORAGE_KEY = 'wicaraFanaToken';
+
+// Fun taglines for the app
+const TAGLINES = [
+  "Ngobrol seru bareng semua orang!",
+  "Chat global, tanpa jejak!",
+  "Spill the tea bareng-bareng!",
+  "Satu ruang, banyak cerita!",
+  "Cerita hari ini, hilang besok!",
+  "Curhat bebas, tanpa bekas!",
+  "Obrolan fana, keseruan nyata!",
+  "Rahasia aman, chat menghilang!",
+  "Ngobrol santai bareng semua orang!",
+  "Bebas ngomong, tanpa khawatir!"
+];
+
+// Bubble animations
+const BUBBLES = Array.from({ length: 10 }, (_, i) => ({
+  id: i,
+  size: Math.random() * 60 + 20,
+  left: Math.random() * 100,
+  animationDuration: Math.random() * 15 + 10,
+  delay: Math.random() * 5,
+}));
 
 const WelcomeScreen: React.FC = () => {
+  const { user, loginWithToken } = useUser();
   const { joinRandomRoom } = useChat();
-  const { user, setUserGender, logout } = useUser();
-  const [selectedGender, setSelectedGender] = useState<'male' | 'female' | null>(user?.gender || null);
-  const [animationClass, setAnimationClass] = useState('opacity-0');
-  const [bubbles, setBubbles] = useState<Array<{id: number, size: number, left: string, animationDuration: string}>>([]);
-
-  // Generate random bubbles for background animation
+  const [tagline, setTagline] = useState<string>(TAGLINES[0]);
+  const [isJoining, setIsJoining] = useState<boolean>(false);
+  const navigate = useNavigate();
+  
+  // Change tagline every 5 seconds
   useEffect(() => {
-    const newBubbles = Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      size: Math.floor(Math.random() * 100) + 50, // 50-150px
-      left: `${Math.floor(Math.random() * 100)}%`,
-      animationDuration: `${Math.floor(Math.random() * 20) + 10}s` // 10-30s
-    }));
-    setBubbles(newBubbles);
+    const taglineInterval = setInterval(() => {
+      setTagline(TAGLINES[Math.floor(Math.random() * TAGLINES.length)]);
+    }, 5000);
     
-    // Fade in animation
-    setTimeout(() => {
-      setAnimationClass('opacity-100 transform-none');
-    }, 100);
+    return () => clearInterval(taglineInterval);
   }, []);
 
-  // Update selectedGender when user changes
+  // Check for existing token on mount
   useEffect(() => {
-    if (user?.gender) {
-      setSelectedGender(user.gender);
+    const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (savedToken) {
+      try {
+        const tokenData = JSON.parse(savedToken);
+        loginWithToken(tokenData.value);
+      } catch (error) {
+        console.error('Invalid token format:', error);
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+      }
     }
-  }, [user]);
+  }, [loginWithToken]);
 
-  const handleGenderSelect = (gender: 'male' | 'female') => {
-    setSelectedGender(gender);
-    setUserGender(gender);
-  };
-
-  const handleStartChat = () => {
-    if (selectedGender) {
+  // Join chat room when user is authenticated
+  const handleJoinChat = () => {
+    if (!user) return;
+    
+    setIsJoining(true);
+    
+    try {
+      // Mencoba join room dan navigasi ke halaman chat
       joinRandomRoom();
+      
+      // Delay navigasi sedikit untuk memastikan room sudah dibuat
+      setTimeout(() => {
+        navigate('/chat');
+        setIsJoining(false);
+      }, 500);
+    } catch (error) {
+      console.error('Failed to join chat:', error);
+      setIsJoining(false);
     }
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    setSelectedGender(null);
   };
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
-      {/* Animated background bubbles */}
-      <div className="absolute inset-0 overflow-hidden">
-        {bubbles.map(bubble => (
-          <div 
-            key={bubble.id}
-            className="absolute rounded-full bg-primary-200 bg-opacity-30 animate-float"
-            style={{
-              width: `${bubble.size}px`,
-              height: `${bubble.size}px`,
-              left: bubble.left,
-              bottom: '-100px',
-              animationDuration: bubble.animationDuration,
-              animationDelay: `${bubble.id * 0.3}s`
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-100 to-primary-50 opacity-80 z-0"></div>
-
-      <div className="relative z-10 flex flex-col items-center justify-center h-full p-6 w-full">
-        <div 
-          className={`transform transition-all duration-700 ${animationClass} translate-y-8`}
-        >
-          {!user ? (
-            <Auth />
-          ) : (
-            <div className="bg-white bg-opacity-95 backdrop-blur-md rounded-3xl shadow-2xl p-8 max-w-md w-full border border-primary-100">
-              <div className="text-center mb-10">
-                <div className="inline-block relative">
-                  <h1 className="text-5xl font-bold text-primary-800 mb-3 relative z-10">Wicara Fana</h1>
-                  <div className="absolute -bottom-3 left-0 right-0 h-3 bg-primary-300 opacity-50 rounded-full"></div>
-                </div>
-                <p className="text-gray-600 mt-4">
-                  Chat anonim dengan orang acak. Semua chat akan menghilang setelah 3 jam.
-                </p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 p-4 overflow-hidden relative">
+      {/* Decorative bubbles */}
+      {BUBBLES.map(bubble => (
+        <div
+          key={bubble.id}
+          className="absolute rounded-full bg-primary-500 bg-opacity-10 animate-float"
+          style={{
+            width: `${bubble.size}px`,
+            height: `${bubble.size}px`,
+            left: `${bubble.left}%`,
+            bottom: '-20px',
+            animationDuration: `${bubble.animationDuration}s`,
+            animationDelay: `${bubble.delay}s`,
+          }}
+        />
+      ))}
+      
+      <div className="w-full max-w-md z-10">
+        <div className="text-center mb-8 animate-fade-in">
+          <h1 className="text-4xl font-bold text-primary-800 mb-2">Wicara Fana</h1>
+          <p className="text-primary-600 text-lg animate-pulse">{tagline}</p>
+        </div>
+        
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 animate-scale-in">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+            {user ? 'Mulai Ngobrol' : 'Masuk dulu yuk!'}
+          </h2>
+          
+          {user ? (
+            <div className="space-y-6 animate-fade-in">
+              <div className="bg-primary-50 rounded-lg p-4 border border-primary-100">
+                <p className="text-gray-700 mb-1">Hai, <span className="font-medium">{user.gender === 'male' ? 'Bro' : 'Sis'}</span>! 👋</p>
+                <p className="text-sm text-gray-500">Kamu siap untuk ngobrol di ruang chat global?</p>
               </div>
-
-              <div className="mb-10">
-                <h2 className="text-lg font-medium text-gray-700 mb-6 text-center">Pilih Gender Anda</h2>
-                
-                <div className="flex gap-6 justify-center">
-                  <div 
-                    onClick={() => handleGenderSelect('male')}
-                    className={`flex flex-col items-center p-5 rounded-2xl cursor-pointer transition-all transform hover:scale-105 ${
-                      selectedGender === 'male' 
-                        ? 'bg-blue-100 border-2 border-blue-500 shadow-lg scale-105' 
-                        : 'bg-white border border-gray-200 hover:bg-blue-50 hover:shadow-md'
-                    }`}
-                  >
-                    <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 text-white text-3xl transition-all ${
-                      selectedGender === 'male' 
-                        ? 'bg-blue-500 shadow-lg shadow-blue-200' 
-                        : 'bg-blue-400'
-                    }`}>
-                      M
-                    </div>
-                    <span className="font-medium text-gray-800">Laki-laki</span>
-                  </div>
-
-                  <div 
-                    onClick={() => handleGenderSelect('female')}
-                    className={`flex flex-col items-center p-5 rounded-2xl cursor-pointer transition-all transform hover:scale-105 ${
-                      selectedGender === 'female' 
-                        ? 'bg-pink-100 border-2 border-pink-500 shadow-lg scale-105' 
-                        : 'bg-white border border-gray-200 hover:bg-pink-50 hover:shadow-md'
-                    }`}
-                  >
-                    <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 text-white text-3xl transition-all ${
-                      selectedGender === 'female' 
-                        ? 'bg-pink-500 shadow-lg shadow-pink-200' 
-                        : 'bg-pink-400'
-                    }`}>
-                      F
-                    </div>
-                    <span className="font-medium text-gray-800">Perempuan</span>
-                  </div>
-                </div>
+              
+              <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 text-sm">
+                <p className="font-medium text-blue-700 mb-1">Info Chat Global:</p>
+                <ul className="list-disc list-inside text-blue-600 space-y-1">
+                  <li>Semua user bisa saling chat dalam 1 ruangan</li>
+                  <li>Pesan akan hilang setelah 3 jam</li>
+                  <li>Chat bersifat anonim, hanya gender yang ditampilkan</li>
+                </ul>
               </div>
-
+              
               <button
-                onClick={handleStartChat}
-                disabled={!selectedGender}
-                className={`w-full py-4 px-6 rounded-xl transition-all text-white font-medium text-lg ${
-                  selectedGender 
-                    ? 'bg-primary-600 hover:bg-primary-700 active:bg-primary-800 shadow-lg hover:shadow-xl shadow-primary-200/50 transform hover:-translate-y-1' 
-                    : 'bg-gray-400 cursor-not-allowed'
+                onClick={handleJoinChat}
+                disabled={isJoining}
+                className={`w-full py-3 rounded-lg text-white font-medium transition-all ${
+                  isJoining 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-primary-600 hover:bg-primary-700 hover:scale-[1.02] active:scale-[0.98]'
                 }`}
               >
-                Mulai Chat
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="w-full mt-4 py-2 px-4 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition-all"
-              >
-                Keluar
+                {isJoining ? 'Menghubungkan...' : 'Gabung Chat Global!'}
               </button>
             </div>
+          ) : (
+            <Auth />
           )}
-
-          <div className="mt-8 text-center text-sm text-gray-500">
-            <p className="mb-2">
-              Dengan menggunakan layanan ini, Anda setuju untuk berkomunikasi secara bertanggung jawab.
-              <br />
-              Bersikaplah baik dan hormati orang lain.
-            </p>
-            <p className="text-xs text-gray-400 mt-4">
-              Created by <a href="https://github.com/abhixyz1" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">@abhixyz1</a>
-            </p>
-          </div>
+        </div>
+        
+        <div className="text-center text-xs text-primary-700 opacity-80 animate-fade-in">
+          <p>Semua chat akan hilang setelah 3 jam.</p>
+          <p className="mt-1">
+            Created by <a href="https://github.com/abhixyz1" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary-800">@abhixyz1</a>
+          </p>
         </div>
       </div>
     </div>
