@@ -22,7 +22,6 @@ interface TokenData {
   characterId?: number;
   avatar?: string;
   characterName?: string;
-  gender?: 'male' | 'female';
   roomId?: string;
 }
 
@@ -58,7 +57,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           tokenData.characterId = characterId;
           tokenData.avatar = character.avatar;
           tokenData.characterName = character.name;
-          tokenData.gender = character.gender;
           localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
         }
       }
@@ -89,7 +87,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (character) {
         const newUser: User = {
           ...user,
-          gender: character.gender,
           avatar: character.avatar,
           characterName: character.name
         };
@@ -147,6 +144,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Store token in localStorage
       localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
       
+      // Simpan token dalam daftar token yang dihasilkan
+      const storedTokens = localStorage.getItem('generatedTokens');
+      let tokens: string[] = [];
+      
+      if (storedTokens) {
+        tokens = JSON.parse(storedTokens);
+      }
+      
+      tokens.push(tokenValue);
+      localStorage.setItem('generatedTokens', JSON.stringify(tokens));
+      
       return tokenValue;
     } catch (error: any) {
       setError(error.message);
@@ -167,6 +175,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       setError(null);
       
+      // Validasi format token
+      // Token harus berupa string hexadecimal dengan panjang 32 karakter
+      const tokenRegex = /^[0-9a-f]{32}$/i;
+      if (!tokenRegex.test(token)) {
+        setError('Format token tidak valid. Token harus berupa 32 karakter hexadecimal.');
+        setLoading(false);
+        return;
+      }
+      
       // Check if this is a stored token
       const storedTokenData = localStorage.getItem(TOKEN_STORAGE_KEY);
       let tokenData: TokenData;
@@ -176,6 +193,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // If input token doesn't match stored token
         if (tokenData.value !== token) {
+          // Verifikasi token dengan server (simulasi)
+          // Dalam implementasi nyata, ini akan melakukan request ke server
+          const isValidToken = await verifyTokenWithServer(token);
+          
+          if (!isValidToken) {
+            setError('Token tidak terdaftar. Silakan generate token baru.');
+            setLoading(false);
+            return;
+          }
+          
           // This is a new token, store it
           const expiryDate = new Date();
           expiryDate.setDate(expiryDate.getDate() + TOKEN_EXPIRY_DAYS);
@@ -189,6 +216,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
         }
       } else {
+        // Verifikasi token dengan server (simulasi)
+        // Dalam implementasi nyata, ini akan melakukan request ke server
+        const isValidToken = await verifyTokenWithServer(token);
+        
+        if (!isValidToken) {
+          setError('Token tidak terdaftar. Silakan generate token baru.');
+          setLoading(false);
+          return;
+        }
+        
         // No stored token, create new token data
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + TOKEN_EXPIRY_DAYS);
@@ -215,7 +252,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Create basic user without character
         const newUser: User = {
           id: tokenData.userId,
-          gender: 'male',
           avatar: '',
           characterName: '',
           isOnline: true
@@ -228,7 +264,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Create user with existing character
         const newUser: User = {
           id: tokenData.userId,
-          gender: tokenData.gender || 'male',
           avatar: tokenData.avatar || '',
           characterName: tokenData.characterName || '',
           isOnline: true
@@ -245,6 +280,22 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     }
   }, []);
+
+  // Simulasi verifikasi token dengan server
+  // Dalam implementasi nyata, ini akan melakukan request ke server
+  const verifyTokenWithServer = async (token: string): Promise<boolean> => {
+    // Hanya token yang dihasilkan oleh aplikasi yang valid
+    // Ini hanya simulasi, dalam implementasi nyata akan melakukan request ke server
+    
+    // Cek apakah token ada di localStorage (token yang pernah di-generate)
+    const storedTokens = localStorage.getItem('generatedTokens');
+    if (storedTokens) {
+      const tokens = JSON.parse(storedTokens);
+      return tokens.includes(token);
+    }
+    
+    return false;
+  };
 
   // Check token on mount
   useEffect(() => {
@@ -270,7 +321,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Create basic user without character
             const newUser: User = {
               id: tokenData.userId,
-              gender: 'male',
               avatar: '',
               characterName: '',
               isOnline: true
@@ -283,7 +333,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Create user with existing character
             const newUser: User = {
               id: tokenData.userId,
-              gender: tokenData.gender || 'male',
               avatar: tokenData.avatar || '',
               characterName: tokenData.characterName || '',
               isOnline: true

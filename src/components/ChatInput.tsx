@@ -48,7 +48,7 @@ const ChatInput: React.FC = () => {
   return (
     <form 
       onSubmit={handleSubmit} 
-      className="border-t border-gray-200 p-4 bg-white relative z-20 animate-slide-up"
+      className="border-t border-gray-200 p-2 sm:p-4 bg-white relative z-20 animate-slide-up"
     >
       <div className="flex items-center">
         <input
@@ -58,31 +58,31 @@ const ChatInput: React.FC = () => {
           onFocus={() => setIsTyping(true)}
           onBlur={() => setIsTyping(false)}
           placeholder={isConnected ? placeholder : "Menunggu koneksi..."}
-          className="flex-1 border border-gray-300 rounded-l-full py-3 px-6 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all focus:scale-[1.01]"
+          className="flex-1 border border-gray-300 rounded-l-full py-2 sm:py-3 px-3 sm:px-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all focus:scale-[1.01]"
           autoFocus
           disabled={!isConnected}
         />
         <button
           type="submit"
-          className={`bg-primary-600 hover:bg-primary-700 text-white rounded-r-full px-6 py-3 transition-all hover:scale-105 active:scale-95 ${
+          className={`bg-primary-600 hover:bg-primary-700 text-white rounded-r-full px-3 sm:px-6 py-2 sm:py-3 transition-all hover:scale-105 active:scale-95 ${
             !message.trim() || !isConnected ? 'opacity-70 cursor-not-allowed' : 'shadow-md'
           }`}
           disabled={!message.trim() || !isConnected}
         >
           <div className={message.trim() && isConnected ? "animate-bounce-subtle" : ""}>
-            <PaperAirplaneIcon className="h-5 w-5" />
+            <PaperAirplaneIcon className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
         </button>
       </div>
       
       <div 
-        className="flex justify-center mt-2 animate-fade-in"
+        className="flex justify-center mt-1 sm:mt-2 animate-fade-in"
       >
         <div 
-          className="text-xs text-gray-400 flex items-center hover:scale-105 hover:text-primary-600 transition-all"
+          className="text-[10px] sm:text-xs text-gray-400 flex items-center hover:scale-105 hover:text-primary-600 transition-all"
         >
           <span 
-            className={`block w-2 h-2 rounded-full mr-1 ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}
+            className={`block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mr-1 ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}
           ></span>
           {isConnected ? 'Chat aman & anonim kok 👌' : 'Menunggu koneksi...'}
         </div>

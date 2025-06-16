@@ -10,32 +10,27 @@ export const AVAILABLE_CHARACTERS = [
   {
     id: 1,
     name: "Tung Tung Tung Sahur",
-    avatar: image1,
-    gender: 'male' as const
+    avatar: image1
   },
   {
     id: 2,
     name: "Brr Brr Patapim",
-    avatar: image2,
-    gender: 'male' as const
+    avatar: image2
   },
   {
     id: 3,
     name: "Chimpanzini Bananini",
-    avatar: image3,
-    gender: 'male' as const
+    avatar: image3
   },
   {
     id: 4,
     name: "Ballerina Cappucina",
-    avatar: image4,
-    gender: 'female' as const
+    avatar: image4
   },
   {
     id: 5,
     name: "Capuccino Assassino",
-    avatar: image5,
-    gender: 'female' as const
+    avatar: image5
   }
 ];
 
@@ -51,28 +46,12 @@ const nouns = [
   'Monkey', 'Zebra', 'Kangaroo', 'Raccoon', 'Turtle', 'Hedgehog'
 ];
 
-// Warna untuk avatar laki-laki dan perempuan
-const maleColors = ['blue', 'teal', 'indigo', 'cyan', 'sky', 'navy'];
-const femaleColors = ['pink', 'rose', 'fuchsia', 'purple', 'violet', 'magenta'];
-
 export const generateRandomNickname = (): string => {
   const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
   const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
   const randomNumber = Math.floor(Math.random() * 1000);
   
   return `${randomAdjective}${randomNoun}${randomNumber}`;
-};
-
-/**
- * Menghasilkan avatar berdasarkan gender
- * @deprecated Gunakan karakter yang tersedia di AVAILABLE_CHARACTERS
- */
-export const generateRandomAvatar = (gender: 'male' | 'female'): string => {
-  const colors = gender === 'male' ? maleColors : femaleColors;
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
-  const initial = gender === 'male' ? 'M' : 'F';
-  
-  return `https://ui-avatars.com/api/?name=${initial}&background=${randomColor}&color=fff&size=256&bold=true`;
 };
 
 /**

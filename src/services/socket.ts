@@ -1,8 +1,8 @@
 import { io } from "socket.io-client";
 import { Message } from "../types";
 
-// URL server Socket.io - hardcoded untuk menghindari masalah .env
-const SOCKET_URL = "http://localhost:5000";
+// URL server Socket.io - menggunakan IP lokal untuk menghindari masalah DNS
+const SOCKET_URL = "http://127.0.0.1:5000";
 
 console.log("Connecting to Socket.io server at:", SOCKET_URL);
 
@@ -64,7 +64,7 @@ export const disconnectSocket = () => {
 };
 
 // Fungsi untuk mengirim pesan
-export const sendMessage = (message: string, roomId: string, userId: string) => {
+export const sendMessage = (message: string, roomId: string, userId: string, userAvatar?: string, userName?: string) => {
   try {
     const messageData: Message = {
       id: Math.random().toString(36).substring(2, 9), // ID akan diganti di server
@@ -72,6 +72,8 @@ export const sendMessage = (message: string, roomId: string, userId: string) => 
       userId,
       timestamp: new Date().toISOString(),
       roomId,
+      senderAvatar: userAvatar,
+      senderName: userName
     };
     
     socket.emit("send_message", messageData);

@@ -4,11 +4,12 @@ export interface Message {
   userId: string;
   timestamp: string;
   roomId: string;
+  senderAvatar?: string;
+  senderName?: string;
 }
 
 export interface User {
   id: string;
-  gender: 'male' | 'female';
   avatar: string;
   characterName: string;
   isOnline: boolean;

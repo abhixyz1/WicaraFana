@@ -37,13 +37,18 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const handleConnect = () => {
       setIsConnected(true);
       setConnectionError(null);
-      console.log("Socket connected in ChatContext");
+      console.log("Socket connected in ChatContext:", socket.id);
     };
 
     // Menangani event disconnect
-    const handleDisconnect = () => {
+    const handleDisconnect = (reason: string) => {
       setIsConnected(false);
-      console.log("Socket disconnected in ChatContext");
+      console.log("Socket disconnected in ChatContext. Reason:", reason);
+      
+      // Set error jika disconnect bukan karena client
+      if (reason === 'io server disconnect' || reason === 'transport close' || reason === 'transport error') {
+        setConnectionError("Koneksi ke server terputus: " + reason);
+      }
     };
 
     // Menangani error koneksi
@@ -51,6 +56,11 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsConnected(false);
       setConnectionError(error.message);
       console.error("Socket connection error in ChatContext:", error);
+      
+      // Tampilkan pesan yang lebih spesifik
+      if (error.message.includes("xhr poll error")) {
+        setConnectionError("Tidak dapat terhubung ke server. Pastikan server berjalan di http://127.0.0.1:5000");
+      }
     };
 
     // Daftarkan event listener
@@ -58,14 +68,26 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     socket.on('disconnect', handleDisconnect);
     socket.on('connect_error', handleConnectError);
 
-    // Koneksikan socket
+    // Koneksikan socket dengan timeout
+    console.log("Attempting to connect to socket server...");
     connectSocket();
+    
+    // Coba koneksi ulang setiap 5 detik jika gagal
+    const reconnectInterval = setInterval(() => {
+      if (!socket.connected) {
+        console.log("Reconnecting to socket server...");
+        connectSocket();
+      } else {
+        clearInterval(reconnectInterval);
+      }
+    }, 5000);
 
     // Cleanup event listener
     return () => {
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
       socket.off('connect_error', handleConnectError);
+      clearInterval(reconnectInterval);
     };
   }, []);
 
@@ -268,33 +290,23 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
-  // Send message function with error handling
+  // Send message function
   const sendMessage = useCallback((text: string) => {
-    if (!user || !currentRoom) {
-      console.error("Can't send message: user or currentRoom is null", { user, currentRoom });
-      return;
-    }
-    
-    console.log("Sending message:", text);
-    
-    const newMessage: Message = {
-      id: uuidv4(),
-      text,
-      userId: user.id,
-      timestamp: new Date().toISOString(),
-      roomId: currentRoom.id,
-    };
-    
-    // Add message to local state immediately
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    if (!user || !currentRoom) return;
     
     try {
-      // Send message through socket
-      socket.emit('send_message', newMessage);
+      // Kirim pesan dengan informasi karakter pengguna
+      socket.emit('send_message', {
+        id: uuidv4(),
+        text,
+        userId: user.id,
+        timestamp: new Date().toISOString(),
+        roomId: currentRoom.id,
+        senderAvatar: user.avatar,
+        senderName: user.characterName
+      });
     } catch (error) {
-      console.error("Error sending message through socket:", error);
-      
-      // Fallback: If socket fails, at least we've already added to local state
+      console.error("Error sending message:", error);
     }
   }, [user, currentRoom]);
 

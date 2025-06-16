@@ -53,7 +53,7 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">
         {showGeneratedToken ? 'Token Berhasil Dibuat!' : 'Masuk atau Buat Akun'}
       </h2>
@@ -69,12 +69,12 @@ const Auth: React.FC = () => {
         <div>
           <div className="mb-4 p-3 bg-green-50 border border-green-100 rounded-lg">
             <p className="text-sm text-gray-600 mb-2">Token Anda:</p>
-            <div className="p-2 bg-white rounded-lg flex items-center justify-between border border-green-100">
-              <code className="text-sm font-mono text-primary-800 break-all">{generatedToken}</code>
+            <div className="p-2 bg-white rounded-lg flex items-center justify-between border border-green-100 overflow-x-auto">
+              <code className="text-xs sm:text-sm font-mono text-primary-800 break-all">{generatedToken}</code>
               <button
                 type="button"
                 onClick={() => navigator.clipboard.writeText(generatedToken)}
-                className="ml-2 p-1 text-gray-500 hover:text-gray-700"
+                className="ml-2 p-1 text-gray-500 hover:text-gray-700 flex-shrink-0"
                 title="Salin ke clipboard"
               >
                 📋
@@ -89,7 +89,7 @@ const Auth: React.FC = () => {
             <button
               onClick={handleUseGeneratedToken}
               disabled={loading}
-              className="w-full py-3 rounded-lg text-white font-medium transition-all bg-green-600 hover:bg-green-700"
+              className="w-full py-2 sm:py-3 rounded-lg text-white font-medium transition-all bg-green-600 hover:bg-green-700"
             >
               Gunakan Token Ini Sekarang
             </button>
@@ -113,7 +113,7 @@ const Auth: React.FC = () => {
                 id="token-input"
                 value={token}
                 onChange={handleTokenChange}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                 placeholder="Masukkan token akses Anda"
               />
             </div>
@@ -142,13 +142,13 @@ const Auth: React.FC = () => {
 
           {/* Generate Token */}
           <div className="mb-4">
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="text-xs sm:text-sm text-gray-600 mb-3">
               Buat token baru untuk memulai. Token berlaku selama 7 hari dan dapat digunakan untuk masuk kembali.
             </p>
             <button
               onClick={handleGenerateToken}
               disabled={loading}
-              className={`w-full py-3 rounded-lg transition-all text-white font-medium ${
+              className={`w-full py-2 sm:py-3 rounded-lg transition-all text-white font-medium ${
                 loading
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-primary-600 hover:bg-primary-700'
@@ -161,13 +161,13 @@ const Auth: React.FC = () => {
           {/* Informasi Token */}
           {hasStoredToken && (
             <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">Token tersimpan di perangkat ini:</p>
-              <div className="p-2 bg-white rounded-lg flex items-center justify-between border border-blue-100">
+              <p className="text-xs sm:text-sm text-gray-600 mb-1">Token tersimpan di perangkat ini:</p>
+              <div className="p-2 bg-white rounded-lg flex items-center justify-between border border-blue-100 overflow-x-auto">
                 <code className="text-xs font-mono text-primary-800 break-all">{token.substring(0, 12)}...{token.substring(token.length - 8)}</code>
                 <button
                   type="button"
                   onClick={() => navigator.clipboard.writeText(token)}
-                  className="ml-2 p-1 text-gray-500 hover:text-gray-700"
+                  className="ml-2 p-1 text-gray-500 hover:text-gray-700 flex-shrink-0"
                   title="Salin ke clipboard"
                 >
                   📋

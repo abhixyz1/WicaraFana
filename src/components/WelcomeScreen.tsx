@@ -126,10 +126,10 @@ const WelcomeScreen: React.FC = () => {
       ))}
       
       {/* Main content container */}
-      <div className="w-full max-w-lg z-10 px-4">
+      <div className="w-full max-w-lg z-10 px-4 sm:px-6 md:px-0">
         <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold text-primary-800 mb-2">Wicara Fana</h1>
-          <p className="text-primary-600 text-lg">{tagline}</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-primary-800 mb-2">Wicara Fana</h1>
+          <p className="text-primary-600 text-base sm:text-lg">{tagline}</p>
         </div>
         
         {/* Main card with clean design */}
@@ -138,11 +138,11 @@ const WelcomeScreen: React.FC = () => {
             needsCharacterSelection ? (
               <CharacterSelection onSelectCharacter={handleSelectCharacter} />
             ) : (
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Mulai Ngobrol</h2>
                 
                 <div className="flex items-center mb-4 p-3 bg-primary-50 rounded-lg">
-                  <div className="w-12 h-12 rounded-full overflow-hidden mr-3 border border-primary-200">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden mr-3 border border-primary-200 flex-shrink-0">
                     <img 
                       src={user.avatar} 
                       alt={user.characterName} 
@@ -150,14 +150,14 @@ const WelcomeScreen: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <p className="text-gray-700">Hai, <span className="font-medium">{user.characterName}</span>! 👋</p>
-                    <p className="text-sm text-gray-500">Siap untuk ngobrol di ruang chat global?</p>
+                    <p className="text-gray-700 text-sm sm:text-base">Hai, <span className="font-medium">{user.characterName}</span>! 👋</p>
+                    <p className="text-xs sm:text-sm text-gray-500">Siap untuk ngobrol di ruang chat global?</p>
                   </div>
                 </div>
                 
                 <div className="flex items-start mb-6 p-3 bg-blue-50 rounded-lg">
                   <div className="text-blue-500 mr-3 mt-1">ℹ️</div>
-                  <div className="text-sm text-blue-700">
+                  <div className="text-xs sm:text-sm text-blue-700">
                     <ul className="space-y-1">
                       <li>• Semua user bisa saling chat dalam 1 ruangan</li>
                       <li>• Pesan akan hilang setelah 3 jam</li>
@@ -170,7 +170,7 @@ const WelcomeScreen: React.FC = () => {
                   <button
                     onClick={handleJoinChat}
                     disabled={isJoining}
-                    className={`w-full py-3 rounded-lg text-white font-medium transition-all ${
+                    className={`w-full py-2 sm:py-3 rounded-lg text-white font-medium transition-all ${
                       isJoining 
                         ? 'bg-gray-400 cursor-not-allowed' 
                         : 'bg-primary-600 hover:bg-primary-700 hover:scale-[1.01] active:scale-[0.99]'
@@ -189,18 +189,18 @@ const WelcomeScreen: React.FC = () => {
               </div>
             )
           ) : hasStoredToken ? (
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">Selamat Datang Kembali!</h2>
               
               <div className="flex items-center mb-6 p-3 bg-primary-50 rounded-lg">
                 <div className="text-primary-500 mr-3 text-xl">🔑</div>
-                <p className="text-gray-700">Kami mendeteksi sesi sebelumnya. Pilih opsi di bawah:</p>
+                <p className="text-sm sm:text-base text-gray-700">Kami mendeteksi sesi sebelumnya. Pilih opsi di bawah:</p>
               </div>
               
               <div className="flex flex-col space-y-3">
                 <button
                   onClick={handleLoginWithToken}
-                  className="w-full py-3 rounded-lg text-white font-medium transition-all bg-primary-600 hover:bg-primary-700"
+                  className="w-full py-2 sm:py-3 rounded-lg text-white font-medium transition-all bg-primary-600 hover:bg-primary-700"
                 >
                   Gunakan Sesi Sebelumnya
                 </button>
