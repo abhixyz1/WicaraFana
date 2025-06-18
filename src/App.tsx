@@ -1,12 +1,15 @@
 import React, { useEffect } from 'react';
 import { UserProvider } from './contexts/UserContext';
 import { ChatProvider } from './contexts/ChatContext';
-import { connectSocket, disconnectSocket } from './services/socket';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useChat } from './contexts/ChatContext';
 import WelcomeScreen from './components/WelcomeScreen';
-import ChatPage from './pages/Chat';
+import { connectSocket, disconnectSocket } from './services/socket';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Chat from './pages/Chat';
 
 function ChatApp() {
+  const { currentRoom } = useChat();
+
   useEffect(() => {
     // Connect to socket when the app loads
     connectSocket();
@@ -26,7 +29,7 @@ function ChatApp() {
       <div className="relative z-10 flex items-center justify-center w-full h-full">
         <Routes>
           <Route path="/" element={<WelcomeScreen />} />
-          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat" element={<Chat />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
@@ -40,13 +43,11 @@ function ChatApp() {
 
 function App() {
   return (
-    <Router>
-      <UserProvider>
-        <ChatProvider>
-          <ChatApp />
-        </ChatProvider>
-      </UserProvider>
-    </Router>
+    <UserProvider>
+      <ChatProvider>
+        <ChatApp />
+      </ChatProvider>
+    </UserProvider>
   );
 }
 
