@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { useChat } from '../contexts/ChatContext';
+import { useTheme } from '../contexts/ThemeContext';
 import Auth from './Auth';
 import CharacterSelection from './CharacterSelection';
 import { useNavigate } from 'react-router-dom';
@@ -34,9 +35,11 @@ const BUBBLES = Array.from({ length: 5 }, (_, i) => ({
 const WelcomeScreen: React.FC = () => {
   const { user, loginWithToken, logout, needsCharacterSelection, setUserCharacter } = useUser();
   const { joinRandomRoom } = useChat();
+  const { isDark } = useTheme();
   const [tagline, setTagline] = useState<string>(TAGLINES[0]);
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const [hasStoredToken, setHasStoredToken] = useState<boolean>(false);
+  const [showAnimation, setShowAnimation] = useState<boolean>(false);
   const navigate = useNavigate();
   
   // Change tagline every 5 seconds
@@ -54,6 +57,11 @@ const WelcomeScreen: React.FC = () => {
     if (savedToken) {
       setHasStoredToken(true);
     }
+    
+    // Trigger entrance animation
+    setTimeout(() => {
+      setShowAnimation(true);
+    }, 100);
   }, []);
 
   // Login with stored token
@@ -108,41 +116,52 @@ const WelcomeScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-100 p-4 overflow-hidden relative">
-      {/* Simplified decorative bubbles */}
-      {BUBBLES.map(bubble => (
-        <div
-          key={bubble.id}
-          className="absolute rounded-full bg-primary-500 bg-opacity-5 animate-float"
-          style={{
-            width: `${bubble.size}px`,
-            height: `${bubble.size}px`,
-            left: `${bubble.left}%`,
-            bottom: '-20px',
-            animationDuration: `${bubble.animationDuration}s`,
-            animationDelay: `${bubble.delay}s`,
-          }}
-        />
-      ))}
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden relative">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {BUBBLES.map(bubble => (
+          <div
+            key={bubble.id}
+            className={`absolute rounded-full bg-primary-500 bg-opacity-5 dark:bg-primary-400 dark:bg-opacity-5 animate-float`}
+            style={{
+              width: `${bubble.size}px`,
+              height: `${bubble.size}px`,
+              left: `${bubble.left}%`,
+              bottom: '-20px',
+              animationDuration: `${bubble.animationDuration}s`,
+              animationDelay: `${bubble.delay}s`,
+            }}
+          />
+        ))}
+      </div>
       
-      {/* Main content container */}
-      <div className="w-full max-w-lg z-10 px-4 sm:px-6 md:px-0">
+      {/* Main content container with animation */}
+      <div 
+        className={`w-full max-w-lg z-10 px-4 sm:px-6 md:px-0 transition-all duration-700 transform ${
+          showAnimation ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+        }`}
+      >
         <div className="text-center mb-6">
-          <h1 className="text-3xl sm:text-4xl font-bold text-primary-800 mb-2">Wicara Fana</h1>
-          <p className="text-primary-600 text-base sm:text-lg">{tagline}</p>
+          <div className="inline-block relative">
+            <h1 className="text-4xl sm:text-5xl font-bold text-primary-800 dark:text-primary-300 mb-2 relative z-10">
+              Wicara Fana
+            </h1>
+            <div className="absolute -bottom-2 -right-2 w-full h-full bg-secondary-400 dark:bg-secondary-700 rounded-lg opacity-20 z-0"></div>
+          </div>
+          <p className="text-primary-700 dark:text-primary-400 text-base sm:text-lg mt-2">{tagline}</p>
         </div>
         
-        {/* Main card with clean design */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        {/* Main card with glass effect */}
+        <div className={`${isDark ? 'glass-effect-dark' : 'glass-effect'} rounded-xl shadow-glass overflow-hidden backdrop-blur-md`}>
           {user ? (
             needsCharacterSelection ? (
               <CharacterSelection onSelectCharacter={handleSelectCharacter} />
             ) : (
-              <div className="p-4 sm:p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Mulai Ngobrol</h2>
+              <div className="p-5 sm:p-7">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Mulai Ngobrol</h2>
                 
-                <div className="flex items-center mb-4 p-3 bg-primary-50 rounded-lg">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden mr-3 border border-primary-200 flex-shrink-0">
+                <div className="flex items-center mb-5 p-4 bg-primary-50 dark:bg-dark-700 rounded-lg transition-colors">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden mr-4 border-2 border-primary-200 dark:border-primary-700 flex-shrink-0 shadow-md">
                     <img 
                       src={user.avatar} 
                       alt={user.characterName} 
@@ -150,18 +169,27 @@ const WelcomeScreen: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <p className="text-gray-700 text-sm sm:text-base">Hai, <span className="font-medium">{user.characterName}</span>! 👋</p>
-                    <p className="text-xs sm:text-sm text-gray-500">Siap untuk ngobrol di ruang chat global?</p>
+                    <p className="text-gray-800 dark:text-gray-100 font-medium text-lg">Hai, <span className="font-bold text-primary-700 dark:text-primary-400">{user.characterName}</span>! 👋</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Siap untuk ngobrol di ruang chat global?</p>
                   </div>
                 </div>
                 
-                <div className="flex items-start mb-6 p-3 bg-blue-50 rounded-lg">
-                  <div className="text-blue-500 mr-3 mt-1">ℹ️</div>
-                  <div className="text-xs sm:text-sm text-blue-700">
-                    <ul className="space-y-1">
-                      <li>• Semua user bisa saling chat dalam 1 ruangan</li>
-                      <li>• Pesan akan hilang setelah 3 jam</li>
-                      <li>• Chat bersifat anonim, hanya karakter yang ditampilkan</li>
+                <div className="flex items-start mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                  <div className="text-blue-500 dark:text-blue-300 mr-3 mt-1 text-lg">ℹ️</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                    <ul className="space-y-1.5">
+                      <li className="flex items-center">
+                        <span className="mr-2">•</span>
+                        <span>Semua user bisa saling chat dalam 1 ruangan</span>
+                      </li>
+                      <li className="flex items-center">
+                        <span className="mr-2">•</span>
+                        <span>Pesan akan hilang setelah 3 jam</span>
+                      </li>
+                      <li className="flex items-center">
+                        <span className="mr-2">•</span>
+                        <span>Chat bersifat anonim, hanya karakter yang ditampilkan</span>
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -170,18 +198,24 @@ const WelcomeScreen: React.FC = () => {
                   <button
                     onClick={handleJoinChat}
                     disabled={isJoining}
-                    className={`w-full py-2 sm:py-3 rounded-lg text-white font-medium transition-all ${
-                      isJoining 
-                        ? 'bg-gray-400 cursor-not-allowed' 
-                        : 'bg-primary-600 hover:bg-primary-700 hover:scale-[1.01] active:scale-[0.99]'
+                    className={`btn-primary ${
+                      isJoining ? 'opacity-70 cursor-not-allowed' : ''
                     }`}
                   >
-                    {isJoining ? 'Menghubungkan...' : 'Gabung Chat Global!'}
+                    {isJoining ? (
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Menghubungkan...
+                      </span>
+                    ) : 'Gabung Chat Global!'}
                   </button>
                   
                   <button
                     onClick={handleLogout}
-                    className="w-full py-2 rounded-lg text-red-600 border border-red-200 hover:bg-red-50 font-medium transition-all"
+                    className="btn-outline text-red-600 dark:text-red-400 border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/30"
                   >
                     Logout
                   </button>
@@ -189,25 +223,25 @@ const WelcomeScreen: React.FC = () => {
               </div>
             )
           ) : hasStoredToken ? (
-            <div className="p-4 sm:p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">Selamat Datang Kembali!</h2>
+            <div className="p-5 sm:p-7">
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4 text-center">Selamat Datang Kembali!</h2>
               
-              <div className="flex items-center mb-6 p-3 bg-primary-50 rounded-lg">
-                <div className="text-primary-500 mr-3 text-xl">🔑</div>
-                <p className="text-sm sm:text-base text-gray-700">Kami mendeteksi sesi sebelumnya. Pilih opsi di bawah:</p>
+              <div className="flex items-center mb-6 p-4 bg-primary-50 dark:bg-dark-700 rounded-lg">
+                <div className="text-primary-500 dark:text-primary-400 mr-3 text-2xl">🔑</div>
+                <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300">Kami mendeteksi sesi sebelumnya. Pilih opsi di bawah:</p>
               </div>
               
               <div className="flex flex-col space-y-3">
                 <button
                   onClick={handleLoginWithToken}
-                  className="w-full py-2 sm:py-3 rounded-lg text-white font-medium transition-all bg-primary-600 hover:bg-primary-700"
+                  className="btn-primary"
                 >
                   Gunakan Sesi Sebelumnya
                 </button>
                 
                 <button
                   onClick={handleLogout}
-                  className="w-full py-2 rounded-lg text-gray-600 hover:bg-gray-100 font-medium transition-all border border-gray-200"
+                  className="btn-outline"
                 >
                   Buat Sesi Baru
                 </button>
@@ -218,10 +252,10 @@ const WelcomeScreen: React.FC = () => {
           )}
         </div>
         
-        <div className="text-center text-xs text-primary-700 opacity-80 mt-4">
+        <div className="text-center text-xs text-primary-700 dark:text-primary-400 opacity-80 mt-4">
           <p>Semua chat akan hilang setelah 3 jam.</p>
           <p className="mt-1">
-            Created by <a href="https://github.com/abhixyz1" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary-800">@abhixyz1</a>
+            Created by <a href="https://github.com/abhixyz1" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary-800 dark:hover:text-primary-300">@abhixyz1</a>
           </p>
         </div>
       </div>

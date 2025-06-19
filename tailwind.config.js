@@ -3,6 +3,7 @@ module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -17,6 +18,33 @@ module.exports = {
           700: '#0369a1',
           800: '#075985',
           900: '#0c4a6e',
+          950: '#082f49',
+        },
+        secondary: {
+          50: '#fdf4ff',
+          100: '#fae8ff',
+          200: '#f5d0fe',
+          300: '#f0abfc',
+          400: '#e879f9',
+          500: '#d946ef',
+          600: '#c026d3',
+          700: '#a21caf',
+          800: '#86198f',
+          900: '#701a75',
+          950: '#4a044e',
+        },
+        dark: {
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+          400: '#94a3b8',
+          500: '#64748b',
+          600: '#475569',
+          700: '#334155',
+          800: '#1e293b',
+          900: '#0f172a',
+          950: '#020617',
         },
       },
       animation: {
@@ -26,6 +54,8 @@ module.exports = {
         'slide-up': 'slide-up 0.5s ease-out forwards',
         'fade-in': 'fade-in 0.8s ease-out forwards',
         'scale-in': 'scale-in 0.3s ease-out forwards',
+        'spin-slow': 'spin 3s linear infinite',
+        'ping-slow': 'ping 3s cubic-bezier(0, 0, 0.2, 1) infinite',
       },
       keyframes: {
         float: {
@@ -55,6 +85,17 @@ module.exports = {
         '600': '600ms',
         '800': '800ms',
       },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      },
+      boxShadow: {
+        'inner-lg': 'inset 0 2px 10px 0 rgba(0, 0, 0, 0.05)',
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
     },
   },
   plugins: [
@@ -71,6 +112,18 @@ module.exports = {
         },
         '.animation-delay-800': {
           'animation-delay': '800ms',
+        },
+        '.glass-effect': {
+          'background': 'rgba(255, 255, 255, 0.25)',
+          'backdrop-filter': 'blur(4px)',
+          '-webkit-backdrop-filter': 'blur(4px)',
+          'border': '1px solid rgba(255, 255, 255, 0.18)',
+        },
+        '.glass-effect-dark': {
+          'background': 'rgba(15, 23, 42, 0.6)',
+          'backdrop-filter': 'blur(4px)',
+          '-webkit-backdrop-filter': 'blur(4px)',
+          'border': '1px solid rgba(255, 255, 255, 0.08)',
         },
       };
       addUtilities(newUtilities);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Message } from '../types';
 import { useUser } from '../contexts/UserContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { format } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import { id } from 'date-fns/locale';
@@ -16,6 +17,7 @@ const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥', '👀', '�
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderAvatar, senderName }) => {
   const { user } = useUser();
+  const { isDark } = useTheme();
   const isOwnMessage = user?.id === message.userId;
   const isSystemMessage = message.userId === 'system';
   const [isHovered, setIsHovered] = useState(false);
@@ -46,10 +48,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderAvatar, sender
   if (isSystemMessage) {
     return (
       <div 
-        className="flex justify-center my-2 sm:my-4 animate-fade-in"
+        className="flex justify-center my-3 animate-fade-in"
       >
         <div 
-          className="bg-gradient-to-r from-primary-100 to-primary-200 text-primary-800 rounded-full px-3 sm:px-5 py-1 sm:py-2 text-xs sm:text-sm max-w-[85%] sm:max-w-[80%] text-center shadow-sm hover:scale-[1.03] transition-transform"
+          className="bg-gradient-to-r from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 text-primary-800 dark:text-primary-300 rounded-full px-4 py-2 text-sm max-w-[85%] sm:max-w-[80%] text-center shadow-sm hover:scale-[1.03] transition-transform"
         >
           {message.text}
         </div>
@@ -60,9 +62,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderAvatar, sender
   // Tentukan warna bubble berdasarkan pengirim
   const getBubbleColor = () => {
     if (isOwnMessage) {
-      return 'bg-gradient-to-r from-primary-500 to-primary-600 text-white';
+      return isDark 
+        ? 'bg-gradient-to-r from-primary-700 to-primary-800 text-white' 
+        : 'bg-gradient-to-r from-primary-500 to-primary-600 text-white';
     } else {
-      return 'bg-gradient-to-r from-blue-100 to-blue-200 text-gray-800';
+      return isDark
+        ? 'bg-gradient-to-r from-dark-700 to-dark-800 text-gray-100'
+        : 'bg-gradient-to-r from-blue-100 to-blue-200 text-gray-800';
     }
   };
 
@@ -71,7 +77,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderAvatar, sender
     if (isOwnMessage) {
       return 'text-white font-bold';
     } else {
-      return 'text-blue-800 font-bold';
+      return isDark
+        ? 'text-blue-300 font-bold'
+        : 'text-blue-800 font-bold';
     }
   };
 
@@ -111,7 +119,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderAvatar, sender
     >
       {showReactions && (
         <div 
-          className="absolute -top-10 bg-white rounded-full shadow-md p-1 flex gap-1 z-10 animate-scale-in"
+          className="absolute -top-10 bg-white dark:bg-dark-700 rounded-full shadow-md p-1 flex gap-1 z-10 animate-scale-in"
           style={{
             left: isOwnMessage ? 'auto' : '40px',
             right: isOwnMessage ? '40px' : 'auto'
@@ -120,8 +128,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderAvatar, sender
           {REACTIONS.map(emoji => (
             <button
               key={emoji}
-              className={`hover:bg-gray-100 rounded-full p-1.5 cursor-pointer hover:scale-[1.2] active:scale-[0.9] transition-transform text-sm ${
-                reaction === emoji ? 'bg-primary-100' : ''
+              className={`hover:bg-gray-100 dark:hover:bg-dark-600 rounded-full p-1.5 cursor-pointer hover:scale-[1.2] active:scale-[0.9] transition-transform text-sm ${
+                reaction === emoji ? 'bg-primary-100 dark:bg-primary-900/50' : ''
               }`}
               onClick={() => handleReactionClick(emoji)}
             >
@@ -132,8 +140,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderAvatar, sender
       )}
       
       {!isOwnMessage && (
-        <div className="flex flex-col items-center mr-1 sm:mr-2">
-          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden flex-shrink-0 shadow-md hover:scale-[1.1] transition-transform">
+        <div className="flex flex-col items-center mr-2">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden flex-shrink-0 shadow-md hover:scale-[1.1] transition-transform border-2 border-white dark:border-dark-700">
             {senderAvatar ? (
               <img src={senderAvatar} alt={senderName || 'Avatar'} className="w-full h-full object-cover" />
             ) : (
@@ -147,7 +155,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderAvatar, sender
       
       <div className="relative group max-w-[75%] sm:max-w-[70%]">
         <div
-          className={`rounded-2xl px-3 sm:px-4 py-2 sm:py-3 ${getBubbleColor()} ${
+          className={`rounded-2xl px-4 py-3 ${getBubbleColor()} ${
             isOwnMessage
               ? 'rounded-br-none'
               : 'rounded-bl-none'
@@ -159,17 +167,19 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderAvatar, sender
               <span className={getSenderNameStyle()}>{senderName}</span>
             </div>
           )}
-          <div className="text-xs sm:text-sm overflow-hidden break-words">{message.text}</div>
+          <div className="text-sm overflow-hidden break-words leading-relaxed">{message.text}</div>
           <div
-            className={`text-[10px] sm:text-xs mt-1 ${
-              isOwnMessage ? 'text-primary-100' : 'text-gray-500'
+            className={`text-[10px] sm:text-xs mt-1.5 ${
+              isOwnMessage 
+                ? isDark ? 'text-primary-300' : 'text-primary-100'
+                : isDark ? 'text-gray-400' : 'text-gray-500'
             } flex items-center gap-1`}
           >
             {formatTimeIndonesia(message.timestamp)}
             
             {isHovered && !showReactions && (
               <button 
-                className="ml-1 opacity-60 hover:opacity-100 transition-transform text-xs sm:text-sm"
+                className="ml-1 opacity-60 hover:opacity-100 transition-opacity text-xs sm:text-sm"
                 onClick={() => setShowReactions(true)}
                 aria-label="Tampilkan emoji"
               >
@@ -181,7 +191,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderAvatar, sender
         
         {reaction && (
           <div 
-            className="absolute -bottom-2 -right-2 bg-white rounded-full shadow-md p-1.5 z-10 animate-bounce-subtle text-sm"
+            className="absolute -bottom-2 -right-2 bg-white dark:bg-dark-700 rounded-full shadow-md p-1.5 z-10 animate-bounce-subtle text-sm"
             onClick={() => setReaction(null)}
           >
             {reaction}
@@ -190,8 +200,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderAvatar, sender
       </div>
       
       {isOwnMessage && (
-        <div className="flex flex-col items-center ml-1 sm:ml-2">
-          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden flex-shrink-0 shadow-md hover:scale-[1.1] transition-transform">
+        <div className="flex flex-col items-center ml-2">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden flex-shrink-0 shadow-md hover:scale-[1.1] transition-transform border-2 border-white dark:border-dark-700">
             {user?.avatar ? (
               <img src={user.avatar} alt={user.characterName || 'Avatar'} className="w-full h-full object-cover" />
             ) : (
@@ -206,4 +216,4 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, senderAvatar, sender
   );
 };
 
-export default ChatMessage; 
+export default ChatMessage;
