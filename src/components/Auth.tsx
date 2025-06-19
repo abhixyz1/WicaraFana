@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useUser } from '../contexts/UserContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Auth: React.FC = () => {
   const { generateToken, loginWithToken, loading, error, clearError } = useUser();
+  const { isDark } = useTheme();
   const [token, setToken] = useState<string>('');
-  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+  const [generatedToken, setGeneratedToken] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
   const [loginMode, setLoginMode] = useState<boolean>(false);
+  const [showTokenOnly, setShowTokenOnly] = useState<boolean>(false);
 
   // Handle token generation
   const handleGenerateToken = async () => {
@@ -14,7 +17,18 @@ const Auth: React.FC = () => {
     const newToken = await generateToken();
     if (newToken) {
       setGeneratedToken(newToken);
-      await loginWithToken(newToken);
+      setShowTokenOnly(true); // Menampilkan token terlebih dahulu
+    }
+  };
+  
+  // Handle login with generated token
+  const handleUseGeneratedToken = async () => {
+    if (!generatedToken) return;
+    
+    try {
+      await loginWithToken(generatedToken);
+    } catch (error) {
+      console.error('Error logging in with generated token:', error);
     }
   };
 
@@ -42,9 +56,11 @@ const Auth: React.FC = () => {
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Selamat Datang!</h2>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          {loginMode 
-            ? 'Masukkan token untuk melanjutkan' 
-            : 'Buat token baru untuk mulai ngobrol'}
+          {showTokenOnly 
+            ? 'Token berhasil dibuat! Simpan token ini untuk login di lain waktu.'
+            : loginMode 
+              ? 'Masukkan token untuk melanjutkan' 
+              : 'Buat token baru untuk mulai ngobrol'}
         </p>
       </div>
       
@@ -54,7 +70,7 @@ const Auth: React.FC = () => {
         </div>
       )}
       
-      {generatedToken ? (
+      {showTokenOnly ? (
         <div className="mb-6 animate-fade-in">
           <div className="p-4 bg-green-50 dark:bg-green-900/30 border border-green-100 dark:border-green-800 rounded-lg mb-3">
             <p className="text-green-700 dark:text-green-400 text-sm font-medium mb-2">Token berhasil dibuat!</p>
@@ -76,6 +92,25 @@ const Auth: React.FC = () => {
                 {copied ? 'Tersalin!' : 'Salin'}
               </button>
             </div>
+          </div>
+          
+          <div className="flex flex-col space-y-3">
+            <button
+              onClick={handleUseGeneratedToken}
+              className="btn-primary w-full"
+            >
+              Gunakan Token Ini Sekarang
+            </button>
+            
+            <button
+              onClick={() => {
+                setShowTokenOnly(false);
+                setGeneratedToken('');
+              }}
+              className="btn-outline w-full"
+            >
+              Kembali
+            </button>
           </div>
         </div>
       ) : loginMode ? (
@@ -135,17 +170,19 @@ const Auth: React.FC = () => {
         </div>
       )}
       
-      <div className="text-center">
-        <button
-          onClick={() => {
-            setLoginMode(!loginMode);
-            clearError();
-          }}
-          className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium"
-        >
-          {loginMode ? 'Buat token baru' : 'Sudah punya token?'}
-        </button>
-      </div>
+      {!showTokenOnly && (
+        <div className="text-center">
+          <button
+            onClick={() => {
+              setLoginMode(!loginMode);
+              clearError();
+            }}
+            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium"
+          >
+            {loginMode ? 'Buat token baru' : 'Sudah punya token?'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
